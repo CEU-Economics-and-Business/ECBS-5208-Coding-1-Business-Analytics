@@ -5,7 +5,7 @@ This is the R script repository of the "[Coding 1: Data Management and Analysis 
 
 ## Syllabus
 
-Please find in the `syllabus` folder of this repository.
+Please find in the `Syllabus` folder of this repository.
 
 ## Technical Prerequisites
 

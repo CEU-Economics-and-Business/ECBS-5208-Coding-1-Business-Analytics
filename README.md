@@ -23,4 +23,4 @@ ggplot(diamonds, aes(cut)) + geom_bar()
 ```
 5. Bookmark, watch or star this repository so that you can easily find it later
 
-If in doubt feel free to [contact me](reguly_agoston@phd.ceu.edu).
+If in doubt feel free to contact me  via email: reguly_agoston@phd.ceu.edu.

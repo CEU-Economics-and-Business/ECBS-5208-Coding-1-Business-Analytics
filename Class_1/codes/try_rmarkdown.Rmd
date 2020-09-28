@@ -1,0 +1,87 @@
+---
+title: "Daily Returns of Amazon Stock"
+output:
+  #pdf_document
+  #html_document
+  beamer_presentation
+---
+
+```{r setup, include=FALSE}
+# Loading the packeges
+library(tidyverse)
+library(moments)
+# Set the geral size of figures
+knitr::opts_chunk$set(fig.width=3, fig.height=2) 
+```
+
+## Amazon Stock prices
+
+As a shareholder in Amazon, the daily returns of Amazon's stock stands in the center of interest.
+
+*Other interesting properties of Amazon stock prices.*
+
+```{r }
+# We can write codes easily
+
+# Tidy approach: modify your path
+data_in <- "/Users/agostonreguly/Dropbox/data/"
+
+# Loading data
+AMZN <- read.csv(paste0(data_in,"AMZN-KO1.csv"))
+
+# Convert Date variable from string to date
+AMZN$days <- as.Date(AMZN$Date,format = "%d/%m/%Y")
+```
+
+## Visualization
+
+You can also embed plots in your report. Left graph shows the stock prices from 2005 until 2014. The right graph shows the distribution of daily returns.
+
+```{r , echo=FALSE}
+# Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+# Time-series plot of stock prices
+ggplot( data = AMZN , aes( x = days , y = Amzn_Close ) ) +
+  geom_line( color = "red") +
+  labs(x="Year (2005-2014)",y="Amazon Stock Value ($)") 
+
+# Distribution of daily stock returns
+ggplot( data = AMZN , aes( x = AMZN_Return ) ) + 
+  geom_histogram( binwidth = 1 , fill = "navyblue" )+
+  labs(x="Amazon Stock Daily Returns ($)",y="Count") 
+```
+
+The mean of the daily returns between 2005-2014 was `r mean(AMZN$AMZN_Return)`
+
+## Summary statistics
+
+Finally we can report the descriptive statistics 
+
+```{r, echo=FALSE, results = 'asis'}
+library(xtable)
+options(xtable.comment = FALSE,include.rownames=FALSE)
+# Create summary statistics for the distribution of the returns
+amzn_sum_stat <- AMZN %>% summarise( mean     = mean(AMZN_Return),
+                                     median   = median(AMZN_Return),
+                                     std      = sd(AMZN_Return),
+                                     iq_range = IQR(AMZN_Return), 
+                                     min      = min(AMZN_Return),
+                                     max      = max(AMZN_Return),
+                                     skew     = skewness(AMZN_Return),
+                                     numObs   = n() )
+# Create good looking table
+xtable(amzn_sum_stat)
+
+```
+
+
+## Conclusion
+
+Rmarkdown is a great tool to create reports! Rmarkdown shines in two cases: 
+1. when you want to share the whole report and also check how it was down (e.g. controlling) 
+2. when you create periodical reports and you need to refresh the data
+
+However if you only need to create a single report you might consider the effectiveness of its use.
+
+
+

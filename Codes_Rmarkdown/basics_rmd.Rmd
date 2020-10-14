@@ -87,7 +87,7 @@ knitr::kable(vienna_sum_stat,caption="Summary stat for hotel prices")
 ```
 
 ## Or you shall use a bit more sophisticated package
-```{r, echo = FALSE , results = "asis", warning = FALSE, message = FALSE, cache = TRUE}
+```{r, echo = FALSE , results = "asis", warning = FALSE, message = FALSE }
 
 library(xtable)
 

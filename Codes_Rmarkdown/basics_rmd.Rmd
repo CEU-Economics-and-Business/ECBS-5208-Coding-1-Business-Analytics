@@ -3,6 +3,7 @@ title: "My analysis"
 date: 2020-10-12
 author: "Team XY"
 output: pdf_document
+        #html_document
   
 ---
 
@@ -100,5 +101,8 @@ print(xtb, comment=FALSE, include.rownames=FALSE)
 
 Here you summarize your results and you may include some code as well `r round(mean(hv$price),2)` in line.
 
-## Further information
+## Further information on Rmarkdown
 R for data science Chapter 21 full and 23 first part (until page 475)
+
+## Chapters for cleaning and basic EDA
+R for data science Chapter 3 (until p 71) and 7

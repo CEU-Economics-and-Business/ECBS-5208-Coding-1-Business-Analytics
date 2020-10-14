@@ -32,7 +32,7 @@ hv <- read_csv( paste0(data_in,"clean/hotels_vienna.csv") )
 Then you will not see anything...
 
 ## Or you can include your scripts as well
-```{r}
+```{ r }
 summary(hv$price)
 ```
 
@@ -89,7 +89,7 @@ knitr::kable(vienna_sum_stat,caption="Summary stat for hotel prices")
 
 ## Or you shall use a bit more sophisticated package
 ```{r, echo = FALSE , results = "asis", warning = FALSE, message = FALSE }
-
+#install.package("xtable")
 library(xtable)
 
 xtb <- xtable(vienna_sum_stat,type = "latex", caption = "Summary statistics - better package")

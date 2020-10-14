@@ -104,5 +104,5 @@ Here you summarize your results and you may include some code as well `r round(m
 ## Further information on Rmarkdown
 R for data science Chapter 21 full and 23 first part (until page 475)
 
-## Chapters for cleaning and basic EDA
+## Chapters for cleaning and filtering with tibble
 R for data science Chapter 3 (until p 71) and 7

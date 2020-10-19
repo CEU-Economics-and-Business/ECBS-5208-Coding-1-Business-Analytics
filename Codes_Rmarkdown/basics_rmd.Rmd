@@ -32,7 +32,7 @@ hv <- read_csv( paste0(data_in,"clean/hotels_vienna.csv") )
 Then you will not see anything...
 
 ## Or you can include your scripts as well
-```{ r }
+```{r }
 summary(hv$price)
 ```
 

@@ -8,14 +8,14 @@
 rm(list=ls())
 library(tidyverse)
 
-
 # Load in clean and tidy data
 # Note: we have pre-manipulated the data to have:
 #     prices for 04-11-2017, in Vienna and London, only hotels between 3-4 stars 
 #     and we have removed hotels which has price larger than 600$ (see Bekes-Kezdi (2020, Ch3))
 
-data_in <- "~/Documents/Egyetem/CEU/Teaching_2020/Coding_with_R/git_coding_1/ECBS-5208-Coding-1-Business-Analytics/Class_5/data/"
-heu <- read_csv(paste0( data_in , "clean/hotels-vienna-london.csv" ))
+# Load data directly from web
+my_url <- "https://raw.githubusercontent.com/CEU-Economics-and-Business/ECBS-5208-Coding-1-Business-Analytics/master/Class_5/data/clean/hotels-vienna-london.csv"
+heu <- read_csv( my_url )
 
 ###############
 # Quick check on all HISTOGRAMS
@@ -38,19 +38,20 @@ summary(heu)
 
 # Check the most important variables: 
 # 1) price
-p <- ggplot( heu , aes( x = price , fill = city ) ) +
+f1 <- ggplot( heu , aes( x = price , fill = city ) ) +
   geom_histogram( aes(y = ..density..) , alpha = 0.5, binwidth = 20) +
   geom_density( aes(y = ..density..) , alpha = 0.5 , bw = 20) +
-  labs(x='Hotel Prices in London and Vienna',y='Density')
+  labs(x='Hotel Prices in London and Vienna',y='Density',fill='Cities')
+f1
 
 ## Some themes
 # install.packages("ggthemes")
 library(ggthemes)
-p + theme_economist() + scale_fill_economist()
-p + theme_stata() + scale_fill_stata()
-p + theme_excel() + scale_fill_excel()
-p + theme_wsj() + scale_fill_wsj('colors6', '')
-p + theme_gdocs() + scale_fill_gdocs()
+f1 + theme_economist() + scale_fill_economist()
+f1 + theme_stata() + scale_fill_stata()
+f1 + theme_excel() + scale_fill_excel()
+f1 + theme_wsj() + scale_fill_wsj('colors6', '')
+f1 + theme_gdocs() + scale_fill_gdocs()
 # see further themes on: https://yutannihilation.github.io/allYourFigureAreBelongToUs/ggthemes/
 
 # 2) distance
@@ -63,16 +64,16 @@ ggplot( heu , aes( x = distance , fill = city ) ) +
 # New types of plots:
 # 1) Box-plots
 #   Remember: outliers, lower/upper adjacent = 1.5*IQR, IQR(25,75%) and median (NO MEAN!)
-f1 <- ggplot(heu, aes(y = price, x = city)) +
+f2 <- ggplot(heu, aes(y = price, x = city)) +
   geom_boxplot(color = "blue", size = 0.5, width = 0.1, alpha = 0.5) +
   labs(x='Cities',y='Price')
-f1
+f2
 
 # Make it a bit more fancy by adding error-bars
-f1 <- f1 + stat_boxplot(geom = "errorbar", width = 0.05,  size = 0.5)
-f1
+f2 <- f2 + stat_boxplot(geom = "errorbar", width = 0.05,  size = 0.5)
+f2
 # Add the mean as a dot
-f1 + stat_summary(fun=mean, geom="point", shape=20, size=5, color="red", fill="red")
+f2 + stat_summary(fun=mean, geom="point", shape=20, size=5, color="red", fill="red")
 
 # 2) Violin plot
 # 
@@ -101,12 +102,12 @@ ds0 <- heu %>%
 ds0
 
 ## Bar plot
-f4 <- ggplot(ds0, aes(x=city, y=numObs, fill = dis_f)) +
+f3 <- ggplot(ds0, aes(x=city, y=numObs, fill = dis_f)) +
   geom_bar(stat = "identity", position = "dodge", width = 0.6,  size = 0.5)+ 
   labs(x = "Citys", y = "Number of hotels", fill = "Distance")
-f4
+f3
 # Make the legends more pretty
-f4 + scale_fill_discrete(name="Distance from city center:") +
+f3 + scale_fill_discrete(name="Distance from city center:") +
   theme(legend.position = "top") 
 
 ## Stacked bar
@@ -209,24 +210,24 @@ ggplot( ds2 , aes(x = dis_f, y = avg_price )) +
 #
 
 ## Scatter plot -> use all the observations
-f2 <- ggplot( heu , aes(x = distance, y = price )) +
+f4 <- ggplot( heu , aes(x = distance, y = price )) +
   geom_point(  )+
   labs(x='Distance (km)',y='Price ($)')
-f2
+f4
 
 # Approximate the conditional mean with a line
-f2 + geom_smooth(method=lm,se=F,formula='y~x')
+f4 + geom_smooth(method=lm,se=F,formula='y~x')
 # Approximate with a lo(w)ess non-parametric line
-f2 + geom_smooth(method=loess,se=F,formula='y~x',color='red')
+f4 + geom_smooth(method=loess,se=F,formula='y~x',color='red')
 
 
 ## Scatter plot differentiate between cities
-f3 <- ggplot( heu , aes(x = distance, y = price, colour = city , shape = city )) +
+f5 <- ggplot( heu , aes(x = distance, y = price, colour = city , shape = city )) +
   geom_point( )+
   labs(x='Distance (km)',y='Price ($)')
-f3
+f5
 # Adding lines conditioned on cities
-f3 + geom_smooth(method=lm,formula='y~x')
+f5 + geom_smooth(method=lm,formula='y~x')
 
 #####
 # Bubble graph
@@ -243,7 +244,7 @@ ggplot(data = heu_rs , aes(x = distance , y = price ,
   scale_y_continuous(limits = c(0, 500 ) ) + 
   scale_color_viridis(
     discrete = TRUE, name = "City", option = "viridis") + 
-  labs(x = "Distance (km)", y = "Price ($)") + 
+  labs(x = "Distance (miles)", y = "Price ($)") + 
   theme_classic()
 
 

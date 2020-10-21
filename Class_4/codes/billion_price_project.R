@@ -206,4 +206,104 @@ testing
 testing <- mutate( testing ,  p_val = round( p_val , digit = 4 ) )
 testing
 
+####
+# Association
+#
+
+# Association between online-offline prices
+ggplot( bpp , aes( x = price_online , y = price ) )+
+  geom_point( color = 'red' )+
+  labs( x = 'Price online' , y = 'Price offline' )+
+  geom_smooth(method = 'lm',formula = y ~ x )
+
+# Bin-scatter
+# 1) 'easy way': using equal distances
+ggplot( bpp , aes( x = price_online , y = price ) )+
+  stat_summary_bin( fun = 'mean' , binwidth = 50, 
+                    geom = 'point' , color = 'red',
+                    size = 2 )
+
+# 2) 'easy way': using equal distances
+#   group by countries
+ggplot( bpp , aes( x = price_online , y = price ,
+                   color = country                    ) )+
+  stat_summary_bin( fun = 'mean' , binwidth = 50, 
+                    geom = 'point',  size = 2 ) +
+  labs( x = 'Price online' , y = 'Price offline' , 
+        color = "Country" ) +
+  facet_wrap(~country,scales = "free",ncol = 2 )+
+  theme(legend.position = "none")+
+  geom_smooth(method="lm",formula = y~x)
+
+##
+# Bin-scatter 2
+# Using percentiles instead of equally sized bins
+
+bpp$price_online_10b <- bpp$price_online %>% 
+                          cut_number( 10 )
+
+bs_summary <- bpp %>% 
+      select( price , price_online_10b ) %>% 
+      group_by( price_online_10b ) %>% 
+      summarise_all( lst(p_min=min,p_max=max,
+                         p_mean = mean, 
+                         p_median = median,
+                         p_sd = sd,
+                         p_num_obs = length ))
+bs_summary
+
+# Recode interval (factor type) to new numeric variables
+bs_summary <- bs_summary %>% 
+          separate( price_online_10b , 
+                    into = c("trash","lower_bound",
+                             "upper_bound" ) , 
+                    sep = "[^0-9\\.]" )
+
+bs_summary <- bs_summary %>% 
+          mutate( lower_bound = as.numeric(lower_bound) ) %>% 
+          mutate( upper_bound = as.numeric(upper_bound)) %>% 
+          select( -trash )
+
+bs_summary <- bs_summary %>% 
+  mutate( mid_point = ( lower_bound + upper_bound ) / 2 )
+
+bs_summary
+
+# Bin-scatter plot
+ggplot( bs_summary , aes( x = mid_point , y = p_mean ) ) +
+  geom_point( size = 2 , color = 'red' ) +
+  labs( x = 'Online prices' , y = 'Offline prices' )+
+  xlim(0,100)+
+  ylim(0,100)
+
+## HOMEWORK:
+# Do the same but for each country
+
+#####
+# Correlation and plots with factors
+
+# Covariance
+cov(bpp$price,bpp$price_online)
+# Is it symmetric? - yes it is
+cov(bpp$price_online,bpp$price)
+
+# Correlation
+cor(bpp$price,bpp$price_online)
+
+# Make a correlation table for each country
+corr_table <- bpp %>% 
+      select( country , price , price_online ) %>% 
+      group_by( country ) %>% 
+      summarise( correlation = cor( price,price_online) )
+
+corr_table
+
+# Graph to show the correlation pattern by each country
+ggplot( corr_table , aes( x = correlation ,
+                y = fct_reorder( country , correlation ) ) ) +
+  geom_point( color = 'red' , size = 2 )+
+  labs(y='Countries',x='Correlation')
+
+
+
 

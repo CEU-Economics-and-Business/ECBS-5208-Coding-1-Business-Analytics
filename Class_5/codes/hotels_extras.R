@@ -62,15 +62,22 @@ ggplot( heu , aes( x = distance , fill = city ) ) +
 
 # 3) Annotation for distance
 hotels_vienna <- subset( heu , city == 'Vienna' )
-ggplot(data =  hotels_vienna, aes (x = distance)) +
+fd <- ggplot(data =  hotels_vienna, aes (x = distance)) +
   geom_histogram( binwidth = 0.5,fill='navyblue')+
-  labs(x = "Distance to city center (miles)", y = "Frequency") +
-  expand_limits(x = 0.01, y = 0.01) +
-  scale_x_continuous(expand = c(0.01,0.01), limits = c(0,14), breaks = seq(0, 14, by = 2)) +
-  scale_y_continuous(expand = c(0.00,0.00), limits = c(0,61), breaks = seq(0, 60, by = 10)) +
-  geom_segment( aes(x = 6, y = 0, xend = 6, yend = 60), color = 'grey', size=1) +
-  annotate("text", x = 11, y = 29, label = "Too far out", size=3)+
-  annotate("rect",xmin=6, xmax=14, ymin=0, ymax=60, fill='blue', alpha=0.1)
+  labs(x = "Distance to city center (miles)", y = "Frequency")
+
+fd 
+fd + expand_limits(x = 0.01, y = 0.01) 
+fd
+fd + scale_x_continuous(expand = c(0.01,0.01), limits = c(0,14), breaks = seq(0, 14, by = 2)) +
+      scale_y_continuous(expand = c(0.00,0.00), limits = c(0,61), breaks = seq(0, 60, by = 10))
+fd
+fd + geom_segment( aes(x = 6, y = 0, xend = 6, yend = 60), color = 'grey', size=1)
+fd
+fd + annotate("text", x = 11, y = 29, label = "Too far out", size=3)
+fd
+fd + annotate("rect",xmin=6, xmax=14, ymin=0, ymax=60, fill='blue', alpha=0.1)
+fd
 
 ###
 # New types of plots:

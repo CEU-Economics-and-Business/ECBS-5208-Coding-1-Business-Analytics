@@ -14,7 +14,7 @@ library(tidyverse)
 #     and we have removed hotels which has price larger than 600$ (see Bekes-Kezdi (2020, Ch3))
 
 # Load data directly from web
-my_url <- "https://raw.githubusercontent.com/CEU-Economics-and-Business/ECBS-5208-Coding-1-Business-Analytics/master/Class_5/data/clean/hotels-vienna-london.csv"
+my_url <- "https://raw.githubusercontent.com/CEU-Economics-and-Business/ECBS-5208-Coding-1-Business-Analytics/master/Class_4n5/data/clean_hotels/hotels-vienna-london.csv"
 heu <- read_csv( my_url )
 
 ###############

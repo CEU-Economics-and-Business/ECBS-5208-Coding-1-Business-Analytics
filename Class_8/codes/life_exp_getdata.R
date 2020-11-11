@@ -26,7 +26,7 @@ a <- WDIsearch('gdp')
 a <- WDIsearch('gdp.*capita.*constant')
 
 # Get data
-gdp_data = WDI(indicator='NY.GDP.PCAP.PP.KD', country="all", start=2019, end=2019)
+gdp_data <- WDI(indicator='NY.GDP.PCAP.PP.KD', country="all", start=2019, end=2019)
 
 
 a <- WDIsearch('population, total')

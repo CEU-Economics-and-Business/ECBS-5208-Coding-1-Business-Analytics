@@ -18,7 +18,7 @@
 # Clear memory
 rm(list=ls())
 
-# Packeges to use
+# Packages to use
 library(tidyverse)
 # For scaling ggplots
 require(scales)
@@ -76,20 +76,20 @@ df <- df %>% mutate( gdptot = gdppc*population )
 ggplot( df , aes(x = gdptot, y = lifeexp)) +
   geom_point() +
   geom_smooth(method="loess")+
-  labs(x = "Total GDP (2017 int. const. $, PPP )",y = "Life expectancy  (years)") 
+  labs(x = "Total GDP (2018 int. const. $, PPP )",y = "Life expectancy  (years)") 
 
 # You can change the scale for Total GDP for checking log-transformation
 ggplot( df , aes(x = gdptot, y = lifeexp)) +
   geom_point() +
   geom_smooth(method="loess")+
-  labs(x = "Total GDP (2017 int. const. $, PPP , ln scale )",y = "Life expectancy  (years)") +
+  labs(x = "Total GDP (2018 int. const. $, PPP , ln scale )",y = "Life expectancy  (years)") +
   scale_x_continuous( trans = log_trans(),  breaks = c(1,2,5,10,20,50,100,200,500,1000,10000) )
 
 # You can change the scale for Total GDP and life-expectancy for checking log-transformation
 ggplot( df , aes(x = gdptot, y = lifeexp ))  +
   geom_point() +
   geom_smooth(method="loess")+
-  labs(x = "Total GDP (2017 int. const. $, PPP , ln scale )",y = "Life expectancy  (years, ln scale)") +
+  labs(x = "Total GDP (2019 int. const. $, PPP , ln scale )",y = "Life expectancy  (years, ln scale)") +
   scale_x_continuous( trans = log_trans(),  breaks = c(1,2,5,10,20,50,100,200,500,1000,10000) )+
   scale_y_continuous( trans = log_trans() )
 
@@ -98,21 +98,21 @@ ggplot( df , aes(x = gdptot, y = lifeexp ))  +
 ggplot( df , aes(x = gdppc, y = lifeexp)) +
   geom_point() +
   geom_smooth(method="loess")+
-  labs(x = "GDP/capita (2017 int. const. $, PPP )",y = "Life expectancy  (years)") 
+  labs(x = "GDP/capita (2018 int. const. $, PPP )",y = "Life expectancy  (years)") 
 
 # You can change the scale for GDP/capita for checking log-transformation
 ggplot( df , aes(x = gdppc, y = lifeexp)) +
   geom_point() +
   geom_smooth(method="loess")+
-  labs(x = "GDP/capita (2017 int. const. $, PPP , ln scale )",y = "Life expectancy  (years)") +
+  labs(x = "GDP/capita (2018 int. const. $, PPP , ln scale )",y = "Life expectancy  (years)") +
   scale_x_continuous( trans = log_trans(), breaks = seq(0, 120, by = 20))
 
 # You can change the scale for GDP/capita and life-expectancy for checking log-transformation
 ggplot( df , aes(x = gdppc, y = lifeexp ))  +
   geom_point() +
   geom_smooth(method="loess")+
-  labs(x = "GDP/capita (2017 int. const. $, PPP , ln scale )",y = "Life expectancy  (years, ln scale)") +
-  scale_x_continuous( trans = log_trans(), breaks = seq(0, 120, by = 20))
+  labs(x = "GDP/capita (2019 int. const. $, PPP , ln scale )",y = "Life expectancy  (years, ln scale)") +
+  scale_x_continuous( trans = log_trans(), breaks = seq(0, 120, by = 20))+
   scale_y_continuous( trans = log_trans() )
 
 ####
@@ -209,7 +209,7 @@ ggplot( data = df, aes( x = ln_gdppc, y = lifeexp ) ) +
 
 # Regression with piecewise linear spline:
 # 1st define the cutoff for gdp per capita
-cutoff<- 50
+cutoff <- 50
 # 2nd we use a log transformation -> cutoff needs to be transformed as well
 cutoff_ln<- log( cutoff )
 # Use simple regression with the lspline function
@@ -247,7 +247,7 @@ htmlreg( list(reg1 , reg2 , reg3 , reg4 , reg5 , reg6 , reg7),
          caption = "Modelling life expectancy and different wealth measures of countries",
          file = paste0( data_out ,'model_comparison.html'), include.ci = FALSE)
 
-#####
+ß#####
 # Based on model comparison our chosen model is reg4 - lifeexp ~ ln_gdppc
 #   Substantive: - level-log interpretation works properly for countries
 #                - magnitude of coefficients are meaningful

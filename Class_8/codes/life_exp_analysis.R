@@ -23,16 +23,16 @@ library(tidyverse)
 # For scaling ggplots
 require(scales)
 # Estimate piecewise linear splines
-#install.packages("lspline")
+install.packages("lspline")
 library(lspline)
 # Estimate robust SE
-#install.packages("estimatr")
+install.packages("estimatr")
 library(estimatr)
 # Compare models with robust SE
-# install.packages("texreg")
+install.packages("texreg")
 library(texreg)
 # For different themes
-# install.packages(ggthemes)
+install.packages(ggthemes)
 library(ggthemes)
 
 # Call the data from github

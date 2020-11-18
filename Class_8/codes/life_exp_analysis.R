@@ -23,16 +23,16 @@ library(tidyverse)
 # For scaling ggplots
 require(scales)
 # Estimate piecewise linear splines
-install.packages("lspline")
+#install.packages("lspline")
 library(lspline)
 # Estimate robust SE
-install.packages("estimatr")
+#install.packages("estimatr")
 library(estimatr)
 # Compare models with robust SE
-install.packages("texreg")
+#install.packages("texreg")
 library(texreg)
 # For different themes
-install.packages(ggthemes)
+#install.packages(ggthemes)
 library(ggthemes)
 
 # Call the data from github
@@ -247,7 +247,7 @@ htmlreg( list(reg1 , reg2 , reg3 , reg4 , reg5 , reg6 , reg7),
          caption = "Modelling life expectancy and different wealth measures of countries",
          file = paste0( data_out ,'model_comparison.html'), include.ci = FALSE)
 
-ß#####
+######
 # Based on model comparison our chosen model is reg4 - lifeexp ~ ln_gdppc
 #   Substantive: - level-log interpretation works properly for countries
 #                - magnitude of coefficients are meaningful
@@ -276,8 +276,85 @@ df %>% top_n( 5 , reg4_res ) %>%
        select( country , lifeexp , reg4_y_pred , reg4_res )
 
 
+#################################
+## Testing hypothesis
+#
+
+##
+# 1) Coefficient is equal to 0:
+# Implemented by default...
+summary( reg4 )
+
+# 2) Coefficient is equal to your favorite value
+library(car)
+# Let test: H0: ln_gdppc = 5, HA: ln_gdppc neq 5
+linearHypothesis( reg4 , "ln_gdppc = 5")
+
+# 3) Or two coefficients are the same in one model: 
+#   in piecewise linear spline, the two coefficients are the same
+summary( reg6 )
+#   H0: lspline(ln_gdppc, cutoff_ln)1 - lspline(ln_gdppc, cutoff_ln)2 = 0
+#   HA: lspline(ln_gdppc, cutoff_ln)1 - lspline(ln_gdppc, cutoff_ln)2 neq 0
+linearHypothesis( reg6 , "lspline(ln_gdppc, cutoff_ln)1 = lspline(ln_gdppc, cutoff_ln)2")
 
 
+
+#################################
+## Prediction uncertainty
+#
+
+# CI of predicted value/regression line is implemented in ggplot
+ggplot( data = df, aes( x = ln_gdppc, y = lifeexp ) ) + 
+  geom_point( color='blue') +
+  geom_smooth( method = lm , color = 'red' , se = T )
+
+##
+# You can get them by predict function
+#   interval can be any of c("none", "confidence", "prediction")
+#   alpha = 0.05 (default) is the significance level
+###
+# CI of regression line
+pred4_CI <- predict( reg4, newdata = df , interval ="confidence" , alpha = 0.05 )
+pred4_CI
+
+# If you want you can ask to calculate the SEs for each point:
+# pred4_CI <- predict( reg4, newdata = df , se.fit=T,
+#                  interval ="confidence" , alpha = 0.05 )
+
+# Hand made CI for regression line
+# 1) Add to datatset:
+df <- df %>% mutate( CI_reg4_lower = pred4_CI$fit[,2],
+                     CI_reg4_upper = pred4_CI$fit[,3] )
+# 2) Plot
+ggplot(  ) + 
+  geom_point( data = df, aes( x = ln_gdppc, y = lifeexp ) , color='blue') +
+  geom_line( data = df, aes( x = ln_gdppc, y = reg4_y_pred ) , color = 'red' , size = 1 ) +
+  geom_line( data = df, aes( x = ln_gdppc, y = CI_reg4_lower ) , color = 'green' ,
+             size = 1 , linetype = "dashed" ) +
+  geom_line( data = df, aes( x = ln_gdppc, y = CI_reg4_upper ) , color = 'black' ,
+             size = 1 , linetype = "dashed" ) +
+  labs(x = "ln( GDP/capita, 2018 int. const. $, PPP)",y = "Life expectancy  (years)") 
+
+
+##
+# Now we change to get the prediction intervals!
+#
+pred4_PI <- predict( reg4, newdata = df , interval ="prediction" , alpha = 0.05 )
+
+# Hand made Prediction Interval for regression line
+# 1) Add to datatset (You can use the SE's as well if you wish...
+#                        then alpha does not have any meaning)
+df <- df %>% mutate( PI_reg4_lower = pred4_PI$fit[,2],
+                     PI_reg4_upper = pred4_PI$fit[,3] )
+# 2) Plot
+ggplot(  ) + 
+  geom_point( data = df, aes( x = ln_gdppc, y = lifeexp ) , color='blue') +
+  geom_line( data = df, aes( x = ln_gdppc, y = reg4_y_pred ) , color = 'red' , size = 1 ) +
+  geom_line( data = df, aes( x = ln_gdppc, y = PI_reg4_lower ) , color = 'green' ,
+             size = 1 , linetype = "dotted" ) +
+  geom_line( data = df, aes( x = ln_gdppc, y = PI_reg4_upper ) , color = 'black' ,
+             size = 1 , linetype = "dotted" ) +
+  labs(x = "ln( GDP/capita, 2018 int. const. $, PPP)",y = "Life expectancy  (years)") 
 
 
 

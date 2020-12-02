@@ -236,11 +236,11 @@ rm( numeric_df, id_cr, pair_names )
 
 
 # reg1: NO control, simple linear regression
-reg1 <- lm_robust(  , data = df )
+reg1 <- lm_robust( score4 ~ stratio , data = df )
 summary( reg1 )
 
 # reg2: NO controls, use piecewise linear spline(P.L.S) with a knot at 18
-reg2 <- lm_robust( , data = df )
+reg2 <- lm_robust( score4 ~ lspline( stratio , 18 ) , data = df )
 summary( reg2 )
 
 # Extra for reg2: 
@@ -248,7 +248,7 @@ summary( reg2 )
 #     and add their interaction as well
 # How it is different from P.L.S? Is the parameter of interest statistically different? 
 # Hint: use 2*Std.Error or CI Lower and CI Upper for comparing intervals!
-reg21 <- lm_robust(  , data = df )
+reg21 <- lm_robust( score4 ~ stratio + (stratio > 18) + stratio*(stratio > 18) , data = df )
 summary( reg21 )
 
 ###
@@ -281,9 +281,34 @@ summary( reg31 )
 
 
 
+###
+# Models with controls:
+#
+# reg3: control for english learners dummy (english_d) only. 
+#   Is your parameter different? Is it a confounder?
+
+reg3 <- lm_robust( score4 ~ lspline( stratio , 18 ) + english_d, data = df )
+summary( reg3 )
+
+# Extra for reg3
+# You may wonder: what if the student-to-teacher ratio is different for those school, 
+#   where the % of english learners are more than 1% (english_d)
+# We can test this hypothesis! use interactions!
+reg31 <- lm_robust( score4 ~ lspline( stratio , 18 ) + english_d +
+                      lspline( stratio , 18 ) * english_d, data = df )
+summary( reg31 )
+
+# You can look at Pr(>|t|) to check if they are zero or
+# you can use 'linearHypothesis' to whether these coefficients are zero simultaneously:
+#   in this case you have to use c("beta1=0,beta2=0") format!
+linearHypothesis( reg31 , c("lspline(stratio, 18)1:english_d = 0",
+                            "lspline(stratio, 18)2:english_d = 0") )
+
+
 ##
 # reg4: reg3 + Schools' special students measures (lunch with P.L.S, knot: 15; and special)
-reg4 <- lm_robust(  , data = df )
+reg4 <- lm_robust( score4 ~ lspline( stratio , 18 ) + english_d 
+                   + lspline(lunch,15) + special , data = df )
 summary( reg4 )
 
 ##
@@ -291,7 +316,10 @@ summary( reg4 )
 #   reg5: reg4 + salary with P.L.S, knots at 35 and 40, exptot, log of income and scratio
 #
 # Reminder: this is already 12 variables...
-reg5 <- lm_robust(  , data = df )
+reg5 <- lm_robust( score4 ~ lspline( stratio , 18 ) + english_d
+                   + lspline(lunch,15) + special 
+                   + lspline(salary,c(35,40)) + exptot 
+                   + log( income ) + scratio, data = df )
 summary( reg5 )
 
 ##

@@ -1,0 +1,75 @@
+mortality_oldage_EU data
+From the SHARE database
+
+All variables measure din 2007 except for whether deceased by 2013
+
+mergeid        Person identifier (fix across modules and waves)
+hhid           Household identifier in respective wave - see var. wave
+int_year       Interview year (some interviewed earlier in 2006)
+deceased       Deceased by 2013 (0-1)
+SRH_2007       Self-rated health in 2007
+chronic_2007   Number of chronic conditions in 2007
+bmi            Body mass index
+underweight    Underweight (BMI < 19)
+overweight     Overweight (25 < BMI < 30)
+obese          Obese (BMI > 30)
+smokes         Smokes daily (currently) (0-10
+ever_smoked    Ever smoked daily (0-1)
+alcohol        Frequency of alcohol consumed last 3 months
+drinks_never   Never consumes alcohol (0-10
+drinks_everyday Consumes alcohol everyday (0-10
+sports         Frequency of sports or activities that are vigorous
+female         Gender: female=1, male=0
+age            Age in 2007 
+eduyears_mod   Years of education
+ed1            Education primary school or less (0-1)
+ed2            Education lower secondary school (0-1)
+ed3            Education upper secondary school (0-1)
+ed4            Education more than secondary school but no university degree (0-1)
+ed5p           Education university degree (0-1)
+income10g      Household income, 10 equal-sized groups within each country
+married        Married (0-1)
+divorce_separ  Divorced or separated (0-1)
+widowed        Widowed (0-1)
+children       Number of children 
+grandchildren  Number of grandchildren
+childclose     Child lives close (0-1)
+country        Country identifier
+AUT            Country = Austria
+DEU            Country = Germany
+SWE            Country = Sweden
+NLD            Country = Netherlands
+ESP            Country = Spain
+ITA            Country = Italy
+FRA            Country = France
+DNK            Country = Denmark
+CHE            Country = Switzerland
+BEL            Country = Belgium
+CZE            Country = Czech Republic
+POL            Country = Poland
+
+Value labels for non-binary factor variables
+SRH_2007
+ 1 Excellent
+ 2 Very good
+ 3 Good
+ 4 Fair
+ 5 Poor
+acohol
+ 1 not at all
+ 2 less than once a month
+ 3 once or twice a month
+ 4 once or twice a week
+ 5 three or four days a week
+ 6 five or six days a week
+ 7 almost every day
+Sports
+ 1 More than once a week
+ 2 Once a week
+ 3 One to three times a month
+ 4 Hardly ever, or never
+
+
+
+
+

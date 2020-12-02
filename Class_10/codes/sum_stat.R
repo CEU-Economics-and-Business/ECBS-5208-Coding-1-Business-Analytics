@@ -24,11 +24,6 @@
 # Tibble: in columns the variables
 #         in rows the requested summary statistics (1st column contains the statistic's name)
 
-# Application
-
-a <- sum_stat(df,c("score4","score8"),c("mean","median","1st_qu."))
-a
-
 sum_stat <- function( df , var_names , stats , num_obs = TRUE ){
   k <- length( var_names )
   built_in_stat <- c('mean','median','mode','min','max','1st_qu.','3rd_qu',
@@ -66,22 +61,34 @@ sum_stat <- function( df , var_names , stats , num_obs = TRUE ){
       } else if (do_stat[ i ] == "mode"){
         sum_stat[i,j] <- mode( var_j )
       } 
+      # Support
+      else if (do_stat[ i ] == "min"){
+        sum_stat[i,j] <- min( var_j )
+      } else if (do_stat[ i ] == "max"){
+        sum_stat[i,j] <- max( var_j )
+      } 
       # Quartiles
-        else if (do_stat[ i ] == "1st_qu."){
+      else if (do_stat[ i ] == "1st_qu."){
         sum_stat[i,j] <- quantile( var_j , probs = 0.25 )
       } else if (do_stat[ i ] == "3rd_qu"){
         sum_stat[i,j] <- quantile( var_j , probs = 0.75)
       } 
-      # Support
-      
       # Dispersion
-      
+      else if (do_stat[ i ] == "sd"){
+        sum_stat[i,j] <- sd( var_j )
+      } else if (do_stat[ i ] == "var"){
+        sum_stat[i,j] <- var( var_j )
+      } else if (do_stat[ i ] == "range"){
+        sum_stat[i,j] <- max( var_j ) - min( var_j )
+      } else if (do_stat[ i ] == "iqr"){
+        sum_stat[i,j] <- quantile( var_j , probs = 0.75) - quantile( var_j , probs = 0.25)
+      } 
     }
   }
-  # Finally add a column which contains the requested statistics 
-  # and relocate to first position
+  # Finally add a column which contains the requested statistics and relocate to first position
   sum_stat <- sum_stat %>% 
-        mutate( statistics = do_stat ) %>% 
-        relocate( statistics )
+    mutate( statistics = do_stat ) %>% 
+    relocate( statistics )
+  
   return( sum_stat )
 }

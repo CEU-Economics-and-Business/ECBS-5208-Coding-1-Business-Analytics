@@ -34,7 +34,7 @@ library(stargazer)
 
 ##
 # Loading the data
-w_dir <- "Documents/Egyetem/CEU/Teaching_2020/Coding_with_R/git_coding_1/ECBS-5208-Coding-1-Business-Analytics/Class_10/"
+w_dir <- "/Users/agostonreguly/Documents/Egyetem/CEU/Teaching_2020/Coding_with_R/git_coding_1/ECBS-5208-Coding-1-Business-Analytics/Class_10/"
 
 
 ######
@@ -133,12 +133,12 @@ desc_stat <- sum_stat( share , var_names = c('stayshealthy','smoking','ever_smok
 #     where country_str stands for country strings
 
 # Import
-country_id <- 
-# join to share to country_id by country
-share <- 
+country_id <- read.csv(paste0(w_dir,"data/clean/country_id.csv"))
+# left join to share by country
+share <- left_join( share , country_id, by = "country" )
 
 # Check the number of people stayed healthy by countries
-
+table(share$country_str,share$stayshealthy)
 
 # Remove non-needed variables
 rm( desc_stat , country_id )
@@ -157,12 +157,12 @@ write.csv( share, paste0( w_dir , "data/clean/share-health-filtered.csv"), row.n
 # Linear probability models of good health at endline and smoking
 
 # 1st model:current smoker on RHS
-lpm1 <- lm( )
+lpm1 <- lm( stayshealthy ~ smoking , data = share )
 # Alternative for lm_robust you can use this summary for lm() object
 summary( lpm1, vcov=sandwich )
 
 # Get the predicted values
-share$pred1 <- 
+share$pred1 <- predict( lpm1 )
 
 # Compare smoking with predicted values and real outcomes
 table(share$pred1, share$smoking)
@@ -188,8 +188,8 @@ ggplot(data = share, label=smoking) +
 
 ##
 # 2nd model: current smoker and ever smoked on RHS
-lpm2 <- lm( )
-summary( )
+lpm2 <- lm( stayshealthy ~ smoking + ever_smoked , data = share )
+summary( lpm2 , vcov = sandwich )
 
 # Compare models w stargazer
 stargazer( list(lpm1, lpm2), digits=3, out=paste(w_dir,"out/saturated_lmp.html",sep=""))
@@ -251,23 +251,24 @@ ggplot(data = share, aes(x=bmi, y=stayshealthy)) +
 #   and include country dummy variables as.factor(country) -> 
 #     -> it automatically drops the first category: 11 (Austria), which is now the reference category
 
-lpm3 <-lm( )
-summary( )
+lpm3 <-lm( stayshealthy ~ smoking + ever_smoked + female +
+           age + lspline(eduyears,c(8,18)) + income10 + lspline(bmi,c(18.5,25,35)) +
+             exerc + as.factor(country),
+           data = share )
+summary( lpm3 , vcov=sandwich )
 
 # Save the model output
 stargazer(lpm3, digits=3, out=paste(w_dir,"out/lpm_rich.html",sep=""))
 
 # Check predicted probabilities: is there any interesting values?
 # predicted probabilities
-share$pred_lpm <- 
+share$pred_lpm <- predict( lpm3 )
 # Make a descriptive summary of the predictions!
-
+summary( share$pred_lpm )
 
 # Show the predicted probabilities' distribution (ggplot)
-
-  
-  
-  
+ggplot( share , aes( x = pred_lpm ) ) +
+  geom_histogram( fill = 'navyblue' , color = 'grey90')
   
 
 # We are interested in the top 1% and bottom 1% characteristics!
@@ -282,7 +283,19 @@ share <- share %>%
 #   and variables c('smoking','ever_smoked','female','age','eduyears','income10','bmi','exerc')
 #   use the num_obs = F input for sum_stat
 
+# Top 1%
+t1 <- sum_stat( subset( share , q100_pred_lpm==100 ) , 
+                c('smoking','ever_smoked','female','age','eduyears','income10','bmi','exerc'),
+                c('mean','median','sd'),
+                num_obs = F )
+t1
 
+# Bottom 1%
+b1 <- sum_stat( subset( share , q100_pred_lpm==1 ) , 
+                c('smoking','ever_smoked','female','age','eduyears','income10','bmi','exerc'),
+                c('mean','median','sd'),
+                num_obs = F )
+b1
 
 
 

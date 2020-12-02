@@ -51,7 +51,7 @@ rm( MASchools )
 #
 #####
 # Model setup
-# Outcome variable:      score4  - 4th grade score (math + english + science).
+# Outcome variable:      score4  - 4th grade score (math + English + science).
 # Parameter of interest: stratio - Student-teacher ratio
 #
 # Thinking about potential confounders:
@@ -130,7 +130,7 @@ ggplot( df , aes(x = stratio)) +
 # english
 ggplot( df , aes(x = english)) +
   geom_histogram(binwidth = 0.5,fill='navyblue') +
-  labs(x = "Ratio of english leearners") 
+  labs(x = "Ratio of english speakers (mother tounge)") 
 
 # Create a dummy variable from english learner:
 # 1 if ratio of english speakers is larger than 1%
@@ -199,9 +199,9 @@ numeric_df <- keep( df , is.numeric )
 cT <- cor(numeric_df , use = "complete.obs")
 
 # Check for highly correlated values:
-sum( abs( cT ) >= 0.8 & cT != 1 ) / 2
+sum( cT >= 0.8 & cT != 1 ) / 2
 # Find the correlations which are higher than 0.8
-id_cr <- which( abs( cT ) >= 0.8 & cT != 1 )
+id_cr <- which( cT >= 0.8 & cT != 1 )
 pair_names <- expand.grid( variable.names(numeric_df) , variable.names(numeric_df) )
 # Get the pairs:
 high_corr <- pair_names[ id_cr , ]
@@ -236,11 +236,11 @@ rm( numeric_df, id_cr, pair_names )
 
 
 # reg1: NO control, simple linear regression
-reg1 <- lm_robust( score4 ~ stratio , data = df )
+reg1 <- lm_robust(  , data = df )
 summary( reg1 )
 
 # reg2: NO controls, use piecewise linear spline(P.L.S) with a knot at 18
-reg2 <- lm_robust( score4 ~ lspline( stratio , 18 ) , data = df )
+reg2 <- lm_robust( , data = df )
 summary( reg2 )
 
 # Extra for reg2: 
@@ -248,14 +248,14 @@ summary( reg2 )
 #     and add their interaction as well
 # How it is different from P.L.S? Is the parameter of interest statistically different? 
 # Hint: use 2*Std.Error or CI Lower and CI Upper for comparing intervals!
-reg21 <- lm_robust( score4 ~ stratio + (stratio > 18) + stratio*(stratio > 18) , data = df )
+reg21 <- lm_robust(  , data = df )
 summary( reg21 )
 
 ###
 # Side note: if want to find knots automatically (sometimes slow, and does not converge...)
 library(segmented)
 reg1_lm <- lm( score4 ~ stratio , data = df )
-fit_seg <- segmented( reg1_lm , seg.Z = ~stratio, psi = list(stratio=17))
+fit_seg <- segmented( reg1_lm , seg.Z = ~stratio, psi = list( stratio=17 ) )
 summary(fit_seg)
 
 
@@ -265,28 +265,25 @@ summary(fit_seg)
 # reg3: control for english learners dummy (english_d) only. 
 #   Is your parameter different? Is it a confounder?
 
-reg3 <- lm_robust( score4 ~ lspline( stratio , 18 ) + english_d, data = df )
+reg3 <- lm_robust( , data = df )
 summary( reg3 )
 
 # Extra for reg3
 # You may wonder: what if the student-to-teacher ratio is different for those school, 
 #   where the % of english learners are more than 1% (english_d)
 # We can test this hypothesis! use interactions!
-reg31 <- lm_robust( score4 ~ lspline( stratio , 18 ) + english_d +
-                      lspline( stratio , 18 ) * english_d, data = df )
+reg31 <- lm_robust( , data = df )
 summary( reg31 )
 
 # You can look at Pr(>|t|) to check if they are zero or
 # you can use 'linearHypothesis' to whether these coefficients are zero simultaneously:
 #   in this case you have to use c("beta1=0,beta2=0") format!
-linearHypothesis( reg31 , c("lspline(stratio, 18)1:english_d = 0",
-                            "lspline(stratio, 18)2:english_d = 0") )
+
 
 
 ##
 # reg4: reg3 + Schools' special students measures (lunch with P.L.S, knot: 15; and special)
-reg4 <- lm_robust( score4 ~ lspline( stratio , 18 ) + english_d 
-                   + lspline(lunch,15) + special , data = df )
+reg4 <- lm_robust(  , data = df )
 summary( reg4 )
 
 ##
@@ -294,10 +291,7 @@ summary( reg4 )
 #   reg5: reg4 + salary with P.L.S, knots at 35 and 40, exptot, log of income and scratio
 #
 # Reminder: this is already 12 variables...
-reg5 <- lm_robust( score4 ~ lspline( stratio , 18 ) + english_d
-                   + lspline(lunch,15) + special 
-                   + lspline(salary,c(35,40)) + exptot 
-                   + log( income ) + scratio , data = df )
+reg5 <- lm_robust(  , data = df )
 summary( reg5 )
 
 ##
@@ -320,30 +314,12 @@ htmlreg( list(reg1 , reg2 , reg3 , reg4 , reg5),
                                  Wealth_Measures = c("NO","NO","NO","NO","YES")))
 
 ###
-# IF HAVE TIME:
 # What if `special' is a `bad control` -> it soaks up the effect on teacher's importance!
 #   Let check the result without 'special' value
+# Run:
+#   reg51 which is the same as reg5, but without
+#   create a html with the name of 'MASchools_alter.html
 
-reg5 <- lm_robust( score4 ~ lspline( stratio , 18 ) + english_d
-                   + lspline(lunch,15)
-                   + lspline(salary,c(35,40)) + exptot 
-                   + log( income ) + scratio , data = df )
-
-htmlreg( list(reg1 , reg2 , reg3 , reg4 , reg5, reg51 ),
-         type = 'html',
-         custom.header = list("Average test scores for 4th graders"=1:5),
-         custom.model.names = c("(1)","(2)","(3)","(4)","(5)","(5.1)"),
-         custom.coef.names = c("Intercept","student/teacher","student/teacher (<18)","student/teacher (>=18)",
-                               "english_dummy","lspline(lunch,15)1","lspline(lunch,15)2","special",
-                               "lspline(salary,c(35,40))1","lspline(salary,c(35,40))2","lspline(salary,c(35,40))3",
-                               "exptot","log( income )","scratio"),
-         omit.coef = "english|lunch|special|salary|exptot|income|scratio",
-         reorder.coef = c(2:4,1),
-         file = paste0( data_out ,'MASchools_2.html'), include.ci = FALSE,
-         single.row = FALSE, siunitx = TRUE,
-         custom.gof.rows = list( English = c("NO","NO","YES","YES","YES","YES"),
-                                 Other_Special = c("NO","NO","NO","YES","YES","Only lunch"),
-                                 Wealth_Measures = c("NO","NO","NO","NO","YES","YES")))
 
 
 #########
@@ -357,7 +333,7 @@ df <- mutate( df , y_hat = reg5$fitted.values )
 # Predict is more general and can handle missing values...
 df <- mutate( df , y_hat = predict( reg5 , df ) )
 
-#y_hat-y plot
+# Create: y_hat-y plot
 ggplot( data = df ) +
   geom_point (aes( x = y_hat , y = score4 ) ,  color="red")+
   geom_line( aes( x = score4 , y = score4 ) , color = "navyblue" , size = 1.5 )+
@@ -368,7 +344,8 @@ ggplot( data = df ) +
 # Unfortunately lm_robust does not have this... 
 # You can use simple lm (remember, in this case SEs are not important!)
 
-# Does adding wealth measure increase the prediction?
+# Does adding wealth measure increase the prediction? 
+#   - We need ALWAYS the same number of observations when comparing models!
 reg4_lm <- lm( score4 ~ lspline( stratio , 18 ) + english_d 
                + lspline(lunch,15) + special , data = subset(df,complete.cases(df) ) )
 
@@ -385,54 +362,7 @@ AIC(reg4_lm,reg5_lm)
 #
 # Task: instead of score4 use score8 as an outcome variable.
 # Need to check the pattern of associations as well!
-chck_sp8 <- function(x_var){
-  ggplot( df , aes(x = x_var, y = score8)) +
-    geom_point() +
-    geom_smooth(method="loess" , formula = y ~ x )+
-    labs(y = "Averaged values of test scores for 8th grade") 
-}
 
-chck_sp8(df$stratio)
-# stratio is same, but even smaller value: I would choose 16
-chck_sp8(df$english_d)
-chck_sp8(df$lunch)
-# Lunch is the same
-chck_sp8(df$special)
-# Special seems to be quadratic...
-chck_sp8(df$salary)
-# Salary needs only one knot at 35
-chck_sp8(df$exptot)
-# Use only linear
-chck_sp8(df$income)
-chck_sp8(log(df$income))
-# Perfect for log-transformation with quadratic
-chck_sp8(df$scratio)
-# Linear
-
-reg1_e <- lm_robust( score8 ~ stratio, data = df )
-reg2_e <- lm_robust( score8 ~ lspline( stratio , 16 ), data = df )
-reg3_e <- lm_robust( score8 ~ lspline( stratio , 16 ) + english_d, data = df )
-reg4_e <- lm_robust( score8 ~ lspline( stratio , 16 ) + english_d
-                   + lspline(lunch,15) + special + special^2 , data = df )
-reg5_e <- lm_robust( score8 ~ lspline( stratio , 16 ) + english_d
-                   + lspline(lunch,15) + special + special^2
-                   + lspline(salary,35) + exptot 
-                   + log( income ) + log( income )^2 + scratio , data = df )
-htmlreg( list(reg1_e , reg2_e , reg3_e , reg4_e , reg5_e),
-         type = 'html',
-         custom.header = list("Average test scores for 8th graders"=1:5),
-         custom.model.names = c("(1)","(2)","(3)","(4)","(5)"),
-         custom.coef.names = c("Intercept","student/teacher","student/teacher (<16)","student/teacher (>=16)",
-                               "english_dummy","lspline(lunch,15)1","lspline(lunch,15)2","special","special^2",
-                               "lspline(salary,35)1","lspline(salary,35)2",
-                               "exptot","log( income )"), #,"log( income )^2","scratio"
-         omit.coef = "english|lunch|special|salary|exptot|income|scratio",
-         reorder.coef = c(2:4,1),
-         file = paste0( data_out ,'MASchools_8grade.html'), include.ci = FALSE,
-         single.row = FALSE, siunitx = TRUE,
-         custom.gof.rows = list( English = c("NO","NO","YES","YES","YES"),
-                                 Other_Special = c("NO","NO","NO","YES","YES"),
-                                 Wealth_Measures = c("NO","NO","NO","NO","YES")))
 
 #####
 # Home-work: apply the same methods for California schools

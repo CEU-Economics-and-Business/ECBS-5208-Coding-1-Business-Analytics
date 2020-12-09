@@ -34,7 +34,7 @@ library(stargazer)
 
 ##
 # Loading the data
-w_dir <- "/Users/agostonreguly/Documents/Egyetem/CEU/Teaching_2020/Coding_with_R/git_coding_1/ECBS-5208-Coding-1-Business-Analytics/Class_10/"
+w_dir <- "Documents/Egyetem/CEU/Teaching_2020/Coding_with_R/git_coding_1/ECBS-5208-Coding-1-Business-Analytics/Class_10/"
 
 
 ######
@@ -81,10 +81,10 @@ share$temp <- NULL
 #   4) healthy individuals at baseline
 
 share <- share %>% filter(
-  stayshealthy == 1 | stayshealthy == 0,
-  baseline == 1 ,
-  age >= 50 & age <= 60,
-  healthy == 1 )
+            stayshealthy == 1 | stayshealthy == 0,
+            baseline == 1 ,
+            age >= 50 & age <= 60,
+            healthy == 1 )
 
 
 # re-define smoking to be 0-1 (5 here means 0)
@@ -123,8 +123,8 @@ source(paste0(w_dir,'/codes/sum_stat.R'))
 
 # Make descriptive statistics for selected variables
 desc_stat <- sum_stat( share , var_names = c('stayshealthy','smoking','ever_smoked','female',
-                                             'age','income10','eduyears','bmi','exerc'),
-                       stats = c('mean','median','min','max','sd') )
+                                              'age','income10','eduyears','bmi','exerc'),
+                               stats = c('mean','median','min','max','sd') )
 
 ##
 # TO DO:
@@ -147,18 +147,16 @@ rm( desc_stat , country_id )
 write.csv( share, paste0( w_dir , "data/clean/share-health-filtered.csv"), row.names = F)
 
 # In case of massing up the models:
-# share <- read.csv( paste0( w_dir , "data/clean/share-health-filtered.csv") )
+share <- read.csv( paste0( w_dir , "data/clean/share-health-filtered.csv") )
 
 ####
 # 2. PART - SATURATED LPM MODELS
 #
-# main regression is stayshealthy ~ RHS
 
 # Linear probability models of good health at endline and smoking
 
-# 1st model:current smoker on RHS
-lpm1 <- lm( stayshealthy ~ smoking , data = share )
-# Alternative for lm_robust you can use this summary for lm() object
+# 1st model: current smoker on RHS
+lpm1 <- lm( stayshealthy ~ smoking, data=share )
 summary( lpm1, vcov=sandwich )
 
 # Get the predicted values
@@ -174,25 +172,21 @@ share<-share %>%
   mutate(weight = n())  %>%
   mutate(weight_2=(weight/1000))
 
-# Show graph with actual and predicted probabilities
 ggplot(data = share, label=smoking) +
   geom_point( aes(x = smoking, y = pred1), size = 2, color="red", shape = 16) +
   geom_line(  aes(x = smoking, y = pred1), colour="red",  size = 0.7) +
   geom_point( aes(x = smoking, y = stayshealthy, size=weight_2), fill = "blue", color="blue",
-              shape = 16, alpha=0.8, show.legend=F, na.rm=TRUE)  +
+                  shape = 16, alpha=0.8, show.legend=F, na.rm=TRUE)  +
   labs(x = "Current smoker",y = "Staying healthy / Predicted probability of ")+
   coord_cartesian(xlim = c(0, 1), ylim=c(0,1)) +
   scale_y_continuous(limits = c(0,1), breaks = seq(0,1,0.1))+
   scale_x_continuous(limits = c(0,1), breaks = seq(0,1,1))
 
-
-##
 # 2nd model: current smoker and ever smoked on RHS
-lpm2 <- lm( stayshealthy ~ smoking + ever_smoked , data = share )
-summary( lpm2 , vcov = sandwich )
+lpm2 <- lm(stayshealthy ~ smoking + ever_smoked, data=share)
+summary(lpm2, vcov=sandwich)
 
-# Compare models w stargazer
-stargazer( list(lpm1, lpm2), digits=3, out=paste(w_dir,"out/saturated_lmp.html",sep=""))
+stargazer(list(lpm1, lpm2), digits=3, out=paste(w_dir,"out/saturated_lmp.html",sep=""))
 rm(lpm2)
 rm(lpm1)
 
@@ -215,7 +209,7 @@ ggplot(data = share, aes(x=eduyears, y=stayshealthy)) +
   scale_x_continuous(expand = c(0.01,0.01), limits = c(0,25), breaks = seq(0,25,4))+
   scale_y_continuous(expand = c(0.01,0.01), limits = c(0,1), breaks = seq(0,1,0.1)) +
   labs(x = "Years of education",y = "Probability of staying healthy ")
-# Seems like... 
+# Seems like non-linear... Use P.L.S with knots at 8 (elementary only) and 18 (Diploma)
 
 # 10 Income categories vs staying healthy
 ggplot(data = share, aes(x=income10, y=stayshealthy)) +
@@ -224,14 +218,14 @@ ggplot(data = share, aes(x=income10, y=stayshealthy)) +
   scale_x_continuous(expand = c(0.01,0.01), limits = c(1,10), breaks = seq(1,10,1))+
   scale_y_continuous(expand = c(0.01,0.01), limits = c(0,1), breaks = seq(0,1,0.1)) +
   labs(x = "Income group within country (deciles)",y = "Probability of staying healthy ")
-# Seems like...
+# Seems like linear...
 
 # Age vs staying healthy
 ggplot(data = share, aes(x=age, y=stayshealthy)) +
   geom_smooth(method="loess", color="blue") +
   scale_y_continuous(expand = c(0.01,0.01),limits = c(0,1), breaks = seq(0,1,0.2), labels = scales::percent) +
   labs(x = "Age at interview (years)",y = "Probability of staying healthy") 
-# Seems like...
+# Seems like linear...
 
 # BMI vs staying healthy
 ggplot(data = share, aes(x=bmi, y=stayshealthy)) +
@@ -239,7 +233,7 @@ ggplot(data = share, aes(x=bmi, y=stayshealthy)) +
   scale_y_continuous(limits = c(0,1), breaks = seq(0,1,0.2)) +
   labs(x = "Body mass index",y = "Stays healthy") +
   scale_x_continuous(limits = c(10,50), breaks = seq(10,50, 10))
-# Seems like...
+# Seems like non-linear... Use P.L.S with knot at 35
 
 ###
 # lpm3: linear probability model with many covariates:
@@ -251,53 +245,46 @@ ggplot(data = share, aes(x=bmi, y=stayshealthy)) +
 #   and include country dummy variables as.factor(country) -> 
 #     -> it automatically drops the first category: 11 (Austria), which is now the reference category
 
-lpm3 <-lm( stayshealthy ~ smoking + ever_smoked + female +
-           age + lspline(eduyears,c(8,18)) + income10 + lspline(bmi,c(18.5,25,35)) +
-             exerc + as.factor(country),
-           data = share )
-summary( lpm3 , vcov=sandwich )
-
+lpm3 <-lm(stayshealthy ~ smoking + ever_smoked + female + age + lspline(eduyears, c(8,18)) + 
+            income10 + lspline(bmi, c(35)) + exerc + as.factor(country), data=share)
+summary(lpm3, vcov=sandwich)
 # Save the model output
 stargazer(lpm3, digits=3, out=paste(w_dir,"out/lpm_rich.html",sep=""))
 
 # Check predicted probabilities: is there any interesting values?
 # predicted probabilities
-share$pred_lpm <- predict( lpm3 )
-# Make a descriptive summary of the predictions!
-summary( share$pred_lpm )
+share$pred_lpm <- predict(lpm3)
+# Summary
+summary(share$pred_lpm)
 
-# Show the predicted probabilities' distribution (ggplot)
-ggplot( share , aes( x = pred_lpm ) ) +
-  geom_histogram( fill = 'navyblue' , color = 'grey90')
-  
+# Show the predicted probabilities' distribution
+ggplot(data=share, aes(x=pred_lpm)) +
+  geom_histogram( aes( y = ..density.. ), fill = 'navyblue', binwidth=0.02) +
+  coord_cartesian(xlim = c(0, 1.2)) +
+  labs(x = "Predicted probability of staying healthy (LPM)",y = "Percent")
 
 # We are interested in the top 1% and bottom 1% characteristics!
 #   Is there any significant difference?
 
 # Create bins which categorize the predicted values between 1-100
 share <- share %>% 
-  mutate( q100_pred_lpm = ntile(pred_lpm, 100) )
+  mutate(q100_pred_lpm = ntile(pred_lpm, 100))
 
 # Make a summary statistics, using sum_stat for the bottom (q100_pred_lpm==1) 
 #   and top 1% (q100_pred_lpm==100), using stats = c('mean','median','sd')
 #   and variables c('smoking','ever_smoked','female','age','eduyears','income10','bmi','exerc')
 #   use the num_obs = F input for sum_stat
 
-# Top 1%
-t1 <- sum_stat( subset( share , q100_pred_lpm==100 ) , 
-                c('smoking','ever_smoked','female','age','eduyears','income10','bmi','exerc'),
-                c('mean','median','sd'),
-                num_obs = F )
-t1
+# Bottom 1% means low probability of stayhealthy
+# 'smoking','ever_smoked','female','age','eduyears','income10','bmi','exerc'
+b1 <- share %>% filter( q100_pred_lpm == 1 )
+var_interest <- c('smoking','ever_smoked','female','age','eduyears','income10','bmi','exerc')
+stat_interest <- c('mean','median','sd')
+sum_stat(b1,var_interest,stat_interest,num_obs = F)
 
-# Bottom 1%
-b1 <- sum_stat( subset( share , q100_pred_lpm==1 ) , 
-                c('smoking','ever_smoked','female','age','eduyears','income10','bmi','exerc'),
-                c('mean','median','sd'),
-                num_obs = F )
-b1
-
-
+# Top 1% means high probability of stayhealthy
+t1 <- share %>% filter( q100_pred_lpm == 100 )
+sum_stat(t1,var_interest,stat_interest,num_obs = F)
 
 # You may change the variable names to remove...
 rm(lpm3,t1,b1,stat_interest,var_interest)
@@ -308,16 +295,14 @@ rm(lpm3,t1,b1,stat_interest,var_interest)
 # Lets compare
 # lpm versus logit and probit
 # with all right-hand-side variables
-
 # If comparing different estimation methods for the same model setup:
 #   good practice to make a 'formula' variable!
-model_formula <- formula( stayshealthy ~ smoking + ever_smoked + female + age + 
-                            lspline(eduyears, c(8,18)) + 
+model_formula <- formula( stayshealthy ~ smoking + ever_smoked + female + age + lspline(eduyears, c(8,18)) + 
                             income10 + lspline(bmi, c(35)) + exerc + as.factor(country) )
 
 # lpm (repeating the previous regression)
 lpm <-lm( model_formula , data=share)
-summary(lpm, vcov=sandwich )
+summary(lpm, vcov=sandwich)
 
 # logit coefficients:
 #   alternatively: familiy='binomial' automatically gives you logit, but not probit...
@@ -339,7 +324,7 @@ share$eduyears0_8 <- ifelse(share$eduyears <=8, share$eduyears ,8)
 share$eduyears8_18 <- ifelse(share$eduyears <=8, 0, ifelse(share$eduyears>8 & share$eduyears<18, share$eduyears-8, share$eduyears-(share$eduyears-18)-8))
 share$eduyears18 <- ifelse(share$eduyears<=18, 0, share$eduyears-18)
 #bmi
-share$bmi16_35 <- ifelse(share$bmi <=35, share$bmi , 35)
+share$bmi16_35 <- ifelse(share$bmi <=35, share$bmi ,35)
 share$bmi35 <- ifelse(share$bmi<=35, 0, share$bmi-35)
 
 logit2 <- glm(formula = stayshealthy ~ smoking + ever_smoked + female + age + eduyears0_8 + eduyears8_18 + eduyears18 + 
@@ -349,29 +334,31 @@ logit_marg2 <- margins(logit2)
 summary(logit_marg2)
 
 ##
-# Probit coefficients: replicate logit, but now use 'probit'
-probit <- glm( model_formula , data = share , family=binomial(link="probit") )
+# Probit coefficients
+probit <- glm(stayshealthy ~ smoking + ever_smoked + female + age + lspline(eduyears, c(8,18)) + 
+                income10 + lspline(bmi, c(35)) + exerc + as.factor(country), data=share, family=binomial(link="probit"))
 summary(probit)
 
 # predicted probabilities 
-share$pred_probit<- predict.glm( probit , type = "response" )
-summary( share$pred_probit )
+share$pred_probit<- predict.glm(probit, type="response") 
+summary(share$pred_probit)
 
 # probit marginal differences
-probit_marg <- probitmfx(  model_formula, data=share, atmean=FALSE, robust = T)
-print( probit_marg )
+probit_marg <- probitmfx(formula = stayshealthy ~ smoking + ever_smoked + female + age + eduyears0_8 + eduyears8_18 + eduyears18 + 
+                           income10 + bmi16_35 + bmi35 + exerc + as.factor(country), data=share, atmean=FALSE)
+print(probit_marg)
 
 ###
 # Creating a model summary output with msummary
 cm <- c('(Intercept)' = 'Constant')
 pmodels <- list(lpm, logit, logit_marg, probit, probit_marg)
 msummary( pmodels ,
-          fmt="%.3f",
-          gof_omit = 'DF|Deviance|Log.Lik.|F|R2 Adj.|AIC|BIC|R2|PseudoR2',
-          stars=c('*' = .05, '**' = .01),
-          coef_rename = cm,
-          coef_omit = 'as.factor(country)*',
-          output = paste0(w_dir,"prob_models_coeff.html")
+         fmt="%.3f",
+         gof_omit = 'DF|Deviance|Log.Lik.|F|R2 Adj.|AIC|BIC|R2|PseudoR2',
+         stars=c('*' = .05, '**' = .01),
+         coef_rename = cm,
+         coef_omit = 'as.factor(country)*',
+         output = paste0(w_dir,"prob_models_coeff.html")
 )
 
 # adding pseudo R2 (not work for mfx)
@@ -388,7 +375,6 @@ msummary(list(lpm, logit, probit),
 ##
 # TO DO:
 # Comparing predicted probabilities of logit and probit to LPM
-share$pred_lpm <- predict(lpm)
 ggplot(data = share) +
   geom_point(aes(x=pred_lpm, y=pred_probit, color="Probit"), size=1,  shape=16) +
   geom_point(aes(x=pred_lpm, y=pred_logit,  color="Logit"), size=1,  shape=16) +
@@ -405,14 +391,14 @@ ggplot(data = share) +
 #stargazer(list(lpm, logit, probit), digits=3, out=paste(w_dir,"out/T11_reg3_R.html",sep=""))
 
 
+
 ####
 # 5. PART - GOODNESS OF FIT
 #
 
-
 # re-estimate the simplest lpm
-lpmbase <- lm( stayshealthy ~ smoking, data=share )
-share$pred_lpmbase <- predict( lpmbase ) 
+lpmbase <- lm(stayshealthy ~ smoking, data=share)
+share$pred_lpmbase <- predict(lpmbase) 
 
 
 # DISTRIBUTION OF PREDICTED PROBABILITIES BY OUTCOME
@@ -451,6 +437,7 @@ ggplot(data = share,aes(x=pred_lpm)) +
   theme(legend.position = c(0.3,0.9),
         legend.key.size = unit(x = 0.5, units = "cm"))
 
+
 #####
 # Summary statistics on predicted probabilities:
 #
@@ -461,19 +448,19 @@ ggplot(data = share,aes(x=pred_lpm)) +
 #
 #   Hint: you may do two tables for staying healthy and not staying healty and use sum_stat on those
 #  
-source(paste0(w_dir,'/codes/sum_stat.R'))
-sh <- sum_stat( subset( share , stayshealthy == 1 ) , 
-                c( "pred_lpmbase","pred_lpm","pred_logit","pred_probit" ),
-                c("mean","median","min","max","sd"),
-                num_obs = F )
+ss_1 <- subset( share , share$stayshealthy==1 )
+ss_0 <- subset( share , share$stayshealthy==0 )
 
-nsh <- sum_stat( subset( share , stayshealthy == 0 ) , 
-                c( "pred_lpmbase","pred_lpm","pred_logit","pred_probit" ),
-                c("mean","median","min","max","sd"),
-                num_obs = F )
+ss_1s <- sum_stat(ss_1,c("pred_lpmbase","pred_lpm","pred_logit","pred_probit"),
+                  c("mean","median","min","max","sd"),num_obs = F)
+ss_0s <- sum_stat(ss_0,c("pred_lpmbase","pred_lpm","pred_logit","pred_probit"),
+                  c("mean","median","min","max","sd"),num_obs = F)
+ss_1s
+ss_0s
 
-sh
-nsh
+
+rm(logit, logit_marg, logit_marg2, logit2, lpm, lpmbase, probit, probit_marg,
+   ss_1 , ss_0 , ss_1s, ss_0s )
 
 ###
 # Bias and Calibration curve
@@ -482,37 +469,40 @@ nsh
 #
 # Biased prediction? Calculate bias!
 #   Hint: bias = mean(prediction) - mean(actual)
-bias <- mean( share$pred_logit ) - mean(share $stayshealthy)
-# 
+mean_pred_logit <- mean( share$pred_logit )
+bias <- mean_pred_logit - mean( share$stayshealthy )
+# Not really... it is really tiny!
+
 
 # Note dplyr:: is important to specify which package's 'select' is used!
 actual_vs_predicted <- share %>%
-  ungroup() %>% 
-  dplyr::select(actual = stayshealthy, 
-                predicted = pred_logit) 
+                        ungroup() %>% 
+                        dplyr::select(actual = stayshealthy, 
+                                       predicted = pred_logit) 
 num_groups <- 10
 
 calibration_d <- actual_vs_predicted %>%
-  mutate(predicted_score_group = dplyr::ntile(predicted, num_groups))%>%
-  group_by(predicted_score_group) %>%
-  dplyr::summarise(mean_actual = mean(actual), 
-                   mean_predicted = mean(predicted), 
-                   num_obs = n())
+      mutate(predicted_score_group = dplyr::ntile(predicted, num_groups))%>%
+      group_by(predicted_score_group) %>%
+      dplyr::summarise(mean_actual = mean(actual), 
+                       mean_predicted = mean(predicted), 
+                       num_obs = n())
 
-ggplot( calibration_d,aes(x = mean_actual, y = mean_predicted)) +
-  geom_point( color='red', size=1.5, alpha=0.8) +
-  geom_line(  color='red', size=1  , alpha=0.8) +
-  geom_abline( intercept = 0, slope = 1, color='blue') +
-  labs( x = "Actual event probability", y = "Predicted event probability") +
-  scale_x_continuous(expand = c(0.01,0.01), limits = c(0,1), breaks = seq(0,1,0.1)) +
-  scale_y_continuous(expand = c(0.01,0.01), limits = c(0,1), breaks = seq(0,1,0.1))
+g1 <- ggplot( calibration_d,aes(x = mean_actual, y = mean_predicted)) +
+      geom_point( color='red', size=1.5, alpha=0.8) +
+      geom_line(  color='red', size=1  , alpha=0.8) +
+      geom_abline( intercept = 0, slope = 1, color='blue') +
+      labs( x = "Actual event probability", y = "Predicted event probability") +
+      scale_x_continuous(expand = c(0.01,0.01), limits = c(0,1), breaks = seq(0,1,0.1)) +
+      scale_y_continuous(expand = c(0.01,0.01), limits = c(0,1), breaks = seq(0,1,0.1))
+g1
 
-###
-# TO DO: create a function which creates a graphs!
+
+# To do: create a function which creates a graphs!
 # Inputs:
 #   dataset, outcome, pred_prob_name, num_groups
 # Output:
-#   graph and calibration_d
+#   bias, calibration_d, and make a graph 
 
 
 ##
@@ -524,7 +514,7 @@ ggplot( calibration_d,aes(x = mean_actual, y = mean_predicted)) +
 # Create a new data_frame just for simplicity!
 df <- data.frame(share$pred_lpmbase, share$pred_lpm, share$pred_logit, share$pred_probit)
 
-# Set the threshold value
+# Set the treshold value
 threshold <- 0.5
 
 # Decide for each observations and each prediction, if larger than the treshold value!

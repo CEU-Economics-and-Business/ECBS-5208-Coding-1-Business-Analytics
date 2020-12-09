@@ -44,7 +44,7 @@ p2 <- p1 + scale_color_manual(values = party_colors)
 p2
 
 # Let separate US according to census (West, south, ect.)
-p3 <- p2 + facet_wrap(~ census, ncol = 1, scales = "free_y") +
+p3 <- p2 + facet_wrap(~ census, ncol = 2, scales = "free_y") +
   guides(color = FALSE) + 
   labs(y = "", x = "Point Margin") + 
   theme(axis.text=element_text(size=8))
@@ -180,7 +180,7 @@ ggplot( data = worldmap ) +
 # Map for death
 ggplot( data = worldmap ) + 
   geom_sf( aes( fill = cumdeaths ), color="black") +
-  ggtitle("World Map of Confirmed Covid Cases",
+  ggtitle("World Map of Number of Death by Covid-19",
           subtitle=paste0("Total Cases on ", date ) )  +
   scale_fill_gradient2(low = "yellow", high = "red", mid = scales::muted("blue"),
                        name = "No. cases for 1000") +

@@ -127,8 +127,8 @@ rm( list = ls())
 #   2) Inflation and Unemployment (%) - monthly from 2001-01 - 2020-10
 #   3) EUR/HUF exchange rate - daily from 2000-01-04 - 2020-12-07
 
-url_git <- 'https://raw.githubusercontent.com/CEU-Economics-and-Business/ECBS-5208-Coding-1-Business-Analytics/master/Class_11/data/'
-gdp <- read_csv(paste0( url_git , 'gdp.csv' ) )
+url_git <- 'https://raw.githubusercontent.com/CEU-Economics-and-Business/ECBS-5208-Coding-1-Business-Analytics/master/Class_12/'
+gdp <- read_csv(paste0( url_git , 'data/gdp.csv' ) )
 mnb <- read_csv(paste0( url_git , 'inflat_unemp.csv' ) )
 eur <- read_csv(paste0( url_git , 'eur_huf.csv' ) )
 
@@ -219,6 +219,47 @@ agg_eur$time <- yq( paste0( agg_eur$year , "-" , agg_eur$quarter ))
 df <- left_join( df , select( agg_eur , time , EUR ) , by = "time" )
 rm( agg_eur,eur)
 
-# TO BE CONTINUED...
+# Keep only complete cases
+df <- df[ complete.cases(df) , ]
 
+
+###
+# Visualization of the data:
+
+# NO 1: check the time-series in different graps
+df_aux <- gather(df, key = measure, value = Rate, 
+             c("gdp", "inflat", "unemp","EUR"))
+
+ggplot( df_aux, aes(x=time, y = Rate ) ) + 
+  geom_line() +
+  facet_wrap( ~ measure , scales = "free" ,
+              labeller = labeller( measure = c("EUR"="EUR/HUF exchange rate","gdp"="GDP",
+                                              "inflat"="Inflation",
+                                              "unemp"="Unemployment") ) ) +
+  labs( x = 'Years' , y = '' ) +
+  theme_bw()
+
+rm(df_aux)
+
+# NO 2: standardization - good to compare the (co)-movement
+stdd <- function( x ){ ( x - mean( x , rm.na = T ) ) / sd( x , na.rm = T ) }
+
+ggplot( df , aes( x = time ) ) +
+  geom_line( aes( y = stdd( gdp )    , color = "gdp" ) ) +
+  geom_line( aes( y = stdd( inflat ) , color = "inflat" ) ) +
+  geom_line( aes( y = stdd( unemp )  , color = "unemp" ) ) +
+  geom_line( aes( y = stdd( EUR )    , color = "EUR") ) +
+  scale_color_manual(name = "Variable",
+                     values = c( "gdp" = "red", "inflat" = "blue",
+                                 "unemp" = "orange", "EUR" = "green"),
+                     labels = c("gdp" = "GDP", "inflat"="Inflation",
+                                "unemp"="Unemployment", "EUR"="EUR")) +
+  labs(x="Years",y="Standardized values")
+
+###
+# Analysing time-series properties:
+#
+# Serial-correlation (a.k.a. Auto-correlation)
+source(paste0( url_git)
+acf (df$inflat, lag = 20)
 

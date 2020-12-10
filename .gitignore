@@ -1,2 +1,5 @@
 .DS_Store
 .Rhistory
+.share-health-filtered.csv
+.share-health.csv
+.easySHARE_rel7-1-0.dta

@@ -1,8 +1,5 @@
 .DS_Store
 .Rhistory
-.Class/data/raw/share-health-filtered.csv
-.Class/data/clean/share-health.csv
-.Class/data/clean/easySHARE_rel7-1-0.dta
 Class_10/data/clean/share-health-filtered.csv
 Class_10/data/clean/share-health.csv
 Class_10/data/raw/easySHARE_rel7-1-0.dta

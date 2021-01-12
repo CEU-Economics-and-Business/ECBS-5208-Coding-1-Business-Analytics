@@ -18,6 +18,7 @@ rm( list = ls() )
 # Call packages
 library(tidyverse)
 # New package to handle time properties:
+install.packages("lubridate")
 library(lubridate)
 
 
@@ -47,6 +48,7 @@ mdy('January 31st, 2017')
 mdy('01-31-2017')
 # Day-Month-Year
 dmy("31-01-2020")
+dmy(31012020)
 # ect...
 
 # If hours-minutes-seconds are also important (Coordinated Universal Time - Greenwich Mean Time)
@@ -222,7 +224,7 @@ agg_eur$time <- yq( paste0( agg_eur$year , "-" , agg_eur$quarter ))
 df <- left_join( df , select( agg_eur , time , EUR ) , by = "time" )
 rm( agg_eur,eur)
 
-# Keep only complete cases
+# Keep only complete cases - !!!USE WITH CARE!!!
 df <- df[ complete.cases(df) , ]
 
 
@@ -273,7 +275,7 @@ library(aTSA)
 # Philips-Perron test for unit-root:
 # Type 1: y_t = rho * y_t-1
 # Type 2: y_t = alpha + rho * y_t-1
-# Type 3: Delta y_t = alpha + delta * t + rho * Delta y_t-1 (Neglect this output!)
+# Type 3: y_t = alpha + delta * t + rho * y_t-1 (Neglect this output!)
 #   Reason to neglect: the power of this test is low (agianst e.g. seasonality)
 pp.test( df$gdp , lag.short = F)
 pp.test( df$inflat , lag.short = F)
@@ -416,7 +418,7 @@ huxreg(D_Inflation=reg1a,
        statistics = c(N = "nobs"))
 
 # Including lags
-# reg3: reg2 + using inflation lags up to 4 lags
+# reg3: reg1 + using inflation lags up to 4 lags
 reg3 <- lm( d_inflat ~ d_unemp + dp_eur + dp_gdp + as.factor( qrt ) 
                       + lag( d_inflat , 1) + lag( d_inflat , 2) + lag( d_inflat , 3) 
                       + lag( d_inflat , 4), data = df )

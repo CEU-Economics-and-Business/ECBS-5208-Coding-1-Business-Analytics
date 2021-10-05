@@ -65,11 +65,12 @@ v+c(2,3,2)
 null_vector <- c()
 # NaN value
 nan_vec <- c(NaN,1,2,3,4)
+na_vec <- c(NA,1,2,3,4)
 nan_vec + 3
 # Inf values
 inf_val <- Inf
 5/0
-sqrt(2)^2 == 2
+round( sqrt(2)^2 ) == 2
 
 # Convention to name your variables
 my_fav_var <- "bla"
@@ -79,12 +80,13 @@ my_favourite_variable <- "bla"
 
 # Difference between doubles and integers
 int_val <- as.integer(1.6)
-doub_val <- as.double(1)
+doub_val <- as.double(1.676)
 
 #
 typeof(int_val)
 typeof(myString)
 is.character(myString)
+is.integer(myString)
 
 ##
 # INDEXING - goes w []
@@ -94,6 +96,10 @@ v[c(1,3)]
 
 # Fix the addition of v+q
 v[1:2] + q 
+
+# Playing with as.integer
+t <- c(4,5,6.14,8.18)
+t[ c( 3 , 4 ) ] <- as.integer( t[ 3 : 4 ] )
 
 ####
 # Lists

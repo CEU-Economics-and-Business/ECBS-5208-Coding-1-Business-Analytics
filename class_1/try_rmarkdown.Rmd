@@ -1,6 +1,6 @@
 ---
 title: "Tryout"
-output: html_document #pdf_document #
+output: pdf_document #html_document #
 ---
 
 ```{r setup, include=FALSE}

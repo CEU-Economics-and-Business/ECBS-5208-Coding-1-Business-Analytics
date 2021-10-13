@@ -15,7 +15,8 @@ df <- data_frame(id=c(1,2,3,4,5,6),
                  age=c(25,30,33,NA,26,38),
                  grade=c("A","A+","B","B-","B+","A"))
 
-# Note that data_frame is depriciated in tidyverse, hence we will use tibble instead...
+# Note that data_frame is depriciated in tidyverse, 
+# hence we will use tibble instead...
 # (But I show you, because in many cases data_frame is still used!)
 df <- tibble(id=c(1,2,3,4,5,6),
              age=c(25,30,33,NA,26,38),
@@ -34,12 +35,17 @@ df[ , 1 ]
 df[ 2 , ]
 # If you want to have a specific value cell:
 df[ 2 , 1 ]
-# Note that all these still give 'list' values, if you want specific values:
+# Note that all these still give 'list' values, 
+# if you want specific values:
 #   use double [[]]
 # e.g. df[[1]] will give you the first column
 df[[1]]
 # however df[[,1]] will not work...
-df[[,1]]
+df[[ ,1]]
+# Specify the row element as well
+df[[1,1]]
+# Select multiple element - not work
+df[[1:3,1]]
 
 # Using tibbles (or data_frame), enables you to use variable (column) names 
 #     instead of 'hard core indexing': df$var_name == df[[column index]]
@@ -66,7 +72,14 @@ df$grade[ df$age >= 25 & df$age < 35 ]
 # 2) Find ids which has A or A+ as grade
 # Extra: use the `which()` function to find these values instead
 #     which function is handy if you are interested in the index values itself.
-
+df$id[ is.na( df$age ) ]
+df$id[ df$grade == 'A' | df$grade == 'A+' ]
+# which function
+?which
+which( is.na( df$age ) )
+which( !is.na( df$age ) )
+df$id[ which( df$grade == 'A' | df$grade == 'A+' ) ]
+df$age[ which( df$grade == 'A' | df$grade == 'A+' ) ]
 
 ####
 # SIMPLE FUNCTIONS
@@ -86,6 +99,9 @@ sum( df$age[ 1 : 3 ] )
 sum( df$age )
 # One can get rid of the NA if add a further argument to the function:
 sum( df$age , na.rm = TRUE )
+# With logical indexing
+sum( df$age[ !is.na( df$age ) ] )
+sum( !is.na( df$age ) )
 
 # And there are many other functions....
 # calculate the mean
@@ -100,10 +116,18 @@ sd( df$age , na.rm = TRUE )
 #       for students with grade lower or equal than B+
 #   - what are the issues that you have encountered?
 #   - what are the potential solutions? Name at least two of them!
+logID <- df$grade == "B+" | df$grade == 'B' | df$grade == 'B-' | df$grade == 'C'
+new_group <- df$age[ logID ]
+mean( df$age[ logID ] , na.rm = TRUE )
+sd( df$age[ logID ] , na.rm = TRUE ) 
+# What happens if using NOT A or A+
+logNID <- !(df$grade == "A" | df$grade == "A+")
 
+#
+df$age[ 1 ] <- 40
 
 #####
-## Merging two dataset
+## Merging two data tables
 #
 
 ##
@@ -115,7 +139,7 @@ df_fj <- tibble(id=c(10,11,12,13,14,15),
                 gender=c("F","F","M","M","M","F"))
 df_fj
 
-# We would like to add this new dataset to our original dataset:
+# We would like to add this new data table to our original data table:
 # full_join will retain all the information
 df_new <- full_join( df , df_fj , by = c("id", "age", "grade") )
 df_new
@@ -142,6 +166,11 @@ df_new2
 #     For all students the year is 2002. Use left_join (soon we will cover an easier way to add a simple variable).
 #     Hint: check the `rep()` function. This will help you to avoid writing in '2002' 12 times!
 #
+df_new3 <- left_join( df_new2 , tibble( id = df_new2$id ,
+                                        year = rep( 2002 , 12 ) 
+                                        ) , 
+                      by = "id" )
+df_new3
 #
 # 2) Create a new datatable `df_new4`, which extends the datatable df_new3 in the following way:
 #   It repeats all the values that are in df_new3 with the following exceptions:
@@ -149,9 +178,15 @@ df_new2
 #     - year is 2012
 #   Hint: use `rbind()` and you can make a shortcut by using the specific variables such as `df_new3$id`, ect.
 
+aux_table <- tibble( id = df_new3$id , 
+                     age = df_new3$age + 10 ,
+                     grade = df_new3$grade ,
+                     height = df_new3$height,
+                     year = df_new3$year + 10,
+                     gender = df_new3$gender ) 
 
-
-
+df_new4 <- rbind( df_new3 , aux_table )
+df_new4
 
 
 # `df_new4` is called the 'long format' and we consider this as the tidy approach!

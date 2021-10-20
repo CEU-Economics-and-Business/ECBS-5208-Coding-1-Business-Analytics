@@ -5,6 +5,25 @@
 ##       CEU           ##
 #########################
 
+## Alternative package to import/export excel
+install.packages( "writexl" )
+library( writexl )
+# read xls or xslx
+read_xls()
+read_xlsx()
+# write xls or xlsx
+write_xlsx()
+write_xls()
+
+# Commenting out multiple lines in R
+if (FALSE){
+  
+}
+# other way
+.f = function(){
+  # Uncommented codes here
+}
+
 # Remove variables from the memory
 rm(list=ls())
 
@@ -39,13 +58,24 @@ datasummary( price + price_online + p_diff ~
                Mean + Median + SD + Min + Max + P25 + P75 + N + PercentMissing , 
              data = bpp_orig )
 
+datasummary( Mean + Median + SD + Min + Max + P25 + P75 + N + PercentMissing ~
+               price + price_online + p_diff , 
+             data = bpp_orig )
+
 # Get a better idea about price differences among different countries
-datasummary( as.factor( country_s )*p_diff ~ Mean + Median , data = bpp_orig )
+datasummary( as.factor( COUNTRY )*p_diff ~ Mean + Median , data = bpp_orig )
+# Create a factor instead
+bpp_orig$COUNTRY <- as.factor( bpp_orig$COUNTRY )
+datasummary( COUNTRY * ( p_diff + price + price_online ) ~ Mean + Median , data = bpp_orig )
+# Different ordering
+datasummary( ( COUNTRY * p_diff ) + ( COUNTRY * price  ) ~ Mean + Median , data = bpp_orig )
 
 ##
 # Task
-# 1) filter the data to 2016 and check the mean and median for each country
+# 1) filter the data to 2016 and check price difference the mean and median for each country
 #
+datasummary( COUNTRY * p_diff ~ Mean + Median , 
+             data = filter( bpp_orig , year == 2016 ) )
 
 
 # Add Range as an external function to the descriptive
@@ -56,7 +86,8 @@ range_ds <- function( x )
 }
 
 datasummary( price + price_online + p_diff ~ 
-               Mean + Median + SD + Min + Max + P25 + P75 + N + PercentMissing + range_ds , 
+               Mean + Median + SD + Min + Max + P25 +
+               P75 + N + PercentMissing + range_ds , 
              data = bpp_orig )
 
 # Extra: create a function which gives you the mode:
@@ -82,7 +113,8 @@ ggplot( data = bpp_orig ) +
 # FILTER DATA -> filter for "PRICETYPE" is a too large restriction!
 #     may check without that filter!
 # use %>%  as a command which concatenates multiple commands!
-bpp <- bpp_orig %>% 
+# ctrl or cmd + shift + m
+bpp <- bpp_orig %>%  
   filter( is.na(sale_online) ) %>%
   filter(!is.na(price)) %>%
   filter(!is.na(price_online)) %>% 
@@ -93,7 +125,7 @@ datasummary( price + price_online + p_diff ~
                Mean + Median + SD + Min + Max + P25 + P75 + N , 
              data = bpp )
 
-# Drop obvious errors: prie is larger than $1000
+# Drop obvious errors: price is larger than $1000
 bpp <- bpp %>% 
   filter( price < 1000 )
 
@@ -102,7 +134,27 @@ datasummary( price + price_online + p_diff ~
                Mean + Median + SD + Min + Max + P25 + P75 + N , 
              data = bpp )
 
-# Histogram
+# Histogram for filtered data
+ggplot( data = bpp ) +
+  geom_histogram( aes( x = price ) , fill = 'navyblue' ) +
+  labs(x = "Price",
+       y = "Count" )
+
+# Play with the number of Bins
+ggplot( data = bpp ) +
+  geom_histogram( aes( x = price ) , fill = 'navyblue',
+                  bins = 50 ) +
+  labs(x = "Price",
+       y = "Count" )
+
+# Play with the number of binwidth
+ggplot( data = bpp ) +
+  geom_histogram( aes( x = price ) , fill = 'navyblue',
+                  binwidth = 10 ) +
+  labs(x = "Price",
+       y = "Count" )
+
+# Histogram - kernel density graph
 ggplot( data = bpp ) +
   geom_density( aes( x = price ) , color = 'blue'  , alpha = 0.1 ) +
   geom_density( aes( x = price_online )  , color = 'red' , alpha = 0.1 ) +
@@ -113,6 +165,20 @@ ggplot( data = bpp ) +
 # Task
 #   1) Do the same histogram, but now with the price differences
 #   2) Add xlim(-5,5) command to ggplot! What changed?
+ggplot( data = bpp ) +
+  geom_density( aes( x = p_diff ) , fill = 'blue' ) +
+  labs( x = 'Price Differences' ,
+        y = 'Relative Frequency' ) +
+  xlim( -1 , 1 ) +
+  ylim( 0 , 10 )
+
+# Play around with the bandwidth
+ggplot( data = bpp ) +
+  geom_density( aes( x = p_diff ) , fill = 'blue' , 
+                bw = 0.3 ) +
+  labs( x = 'Price Differences' ,
+        y = 'Relative Frequency' ) +
+  xlim( -10 , 10 )
 
 
 
@@ -139,7 +205,7 @@ bpp %>% select( country , p_diff ) %>%
              num_obs = n() )
 
 # Create ggplot for countries: histogram
-ggplot(data = bpp , aes( x = p_diff , fill = country ) ) +
+ggplot( data = bpp , aes( x = p_diff , fill = country ) ) +
   geom_histogram( aes( y = ..density.. ), alpha =0.4 ) +
   labs( x = "Price" , y = 'Relative Frequency' ,
         fill = 'Country' ) +
@@ -151,6 +217,33 @@ ggplot(data = bpp , aes( x = p_diff , fill = country ) ) +
 # 1 )Do the same, but use geom_density instead of geom_histogram!
 #     You may play around with the xlim!
 # 2) Drop the `facet_wrap` command! What happens? What if instead of `fill` you use `color` or `group`
+ggplot( data = bpp , aes( x = p_diff , fill = country ) ) +
+  geom_density( aes( y = ..density.. ) , alpha =0.4 ) +
+  labs( x = "Price" , y = 'Relative Frequency' ,
+        fill = 'Country' ) +
+  facet_wrap(~country)+
+  xlim(-1,1)
+
+ggplot( data = bpp , aes( x = p_diff , fill = country ) ) +
+  geom_density( alpha = 0.2 ) +
+  labs( x = "Price" , y = 'Relative Frequency' ,
+        fill = 'Country' ) +
+  xlim(-1,1)
+
+ggplot( data = bpp , aes( x = p_diff , color = country ) ) +
+  geom_density( alpha =0.4 ) +
+  labs( x = "Price" , y = 'Relative Frequency' ,
+        color = 'Country' ) +
+  facet_wrap(~country)+
+  xlim(-1,1)
+
+ggplot( data = bpp , aes( x = p_diff , group = country ) ) +
+  geom_density( alpha =0.4 ) +
+  labs( x = "Price" , y = 'Relative Frequency' ,
+        group = 'Country' ) +
+  facet_wrap(~country)+
+  xlim(-1,1)
+
 
 
 ######
@@ -197,7 +290,7 @@ testing
 # Association between online-offline prices
 ggplot( bpp , aes( x = price_online , y = price ) )+
   geom_point( color = 'red' )+
-  labs( x = 'Price online' , y = 'Price offline' )+
+  labs( x = 'Price online' , y = 'Price retail' )+
   geom_smooth(method = 'lm',formula = y ~ x )
 
 # Bin-scatter
@@ -256,7 +349,8 @@ bs_summary
 # Bin-scatter plot
 ggplot( bs_summary , aes( x = mid_point , y = p_mean ) ) +
   geom_point( size = 2 , color = 'red' ) +
-  labs( x = 'Online prices' , y = 'Offline prices' )+
+  labs( x = 'Online prices' , y = 'Retail prices' )+
+  geom_smooth()+
   xlim(0,100)+
   ylim(0,100)
 
@@ -264,15 +358,16 @@ ggplot( bs_summary , aes( x = mid_point , y = p_mean ) ) +
 # Correlation and plots with factors
 
 # Covariance
-cov(bpp$price,bpp$price_online)
+cov( bpp$price , bpp$price_online )
 
 ##
 # Task:
 # Check if it is symmetric!
+cov( bpp$price_online , bpp$price )
 
 
 # Correlation
-cor(bpp$price,bpp$price_online)
+cor( bpp$price , bpp$price_online )
 
 # Make a correlation table for each country
 corr_table <- bpp %>% 
@@ -294,3 +389,19 @@ ggplot( corr_table , aes( x = correlation ,
 # Note: 1) use color for prettier output with factor
 #       2) You can alter the legend labels with `color=`
 
+corr_table2 <- bpp %>% 
+  select( country , year , price , price_online ) %>% 
+  group_by( year , country ) %>% 
+  summarise( correlation = cor( price , price_online ) )
+  
+corr_table2
+
+ggplot( corr_table2 , aes( x = correlation ,
+                           y = fct_reorder( country , correlation),
+                           color = as.factor( year ) ) )+
+  geom_point( size = 2 ) +
+  labs( x = 'Correlation' , y = 'Country' , color = 'Year' )
+
+  
+  
+  

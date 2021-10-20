@@ -3,6 +3,7 @@ title: "Report on Billion Price Project"
 output: 
   pdf_document:
     extra_dependencies: ["float"]
+  #html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -46,7 +47,7 @@ Our main interest is whether online prices are lower or higher than simple retai
 ```{r, echo=FALSE}
 P95 <- function(x){quantile(x,0.95,na.rm=T)}
 P05 <- function(x){quantile(x,0.05,na.rm=T)}
-datasummary( (`Online` = price ) + (`Retail` = price_online ) + (`Price difference` = p_diff ) ~
+datasummary( (`Retail` = price ) + (`Online` = price_online ) + (`Price difference` = p_diff ) ~
              Mean + Median + SD + Min + Max + P05 + P95 , 
              data = bpp ,
              title = 'Descriptive statistics of prices',
@@ -82,7 +83,7 @@ test_out <- t.test( bpp$p_diff , mu = 0 )
 
 ```
 
-We test the hypothesis, whether the price difference is zero, therefore there is no difference between retail and onlin prices:
+We test the hypothesis, whether the price difference is zero, therefore there is no difference between retail and online prices:
 
 $$H_0:=\text{price online} - \text{price retail} = 0$$
 $$H_A:=\text{price online} - \text{price retail} \neq 0$$

@@ -9,7 +9,7 @@ rm( list= ls())
 # Load packages
 library( tidyverse )
 
-# Play with the old hotel-vienna dataset
+# Play with the old hotel-vienna-london dataset
 df <- read_csv( "https://raw.githubusercontent.com/CEU-Economics-and-Business/ECBS-5208-Coding-1-Business-Analytics/master/class_4/data/hotels-vienna-london.csv" )
 
 
@@ -36,6 +36,11 @@ ggplot( filter( df , city == 'Vienna' ) , aes( x = price ) ) +
 # Task: 
 #   Play around with themes!
 #
+ggplot( filter( df , city == 'Vienna' ) , aes( x = price ) ) +
+  geom_histogram( alpha = 0.8, binwidth = 20 , color='white',
+                  fill = 'navyblue') +
+  labs(x='Hotel Prices in  Vienna',y='Density')+
+  theme_dark()
 
 ##
 # Creating your own theme -> go the theme_bluewhite function
@@ -64,9 +69,9 @@ f1
 #   2) if discrete/categorical variable: `scale_()_discrete`
 
 #   a) limit -> changes the l
-f1 + scale_x_continuous( limits = c( 0 , 750 ) )
+f1 + scale_x_continuous( limits = c( 0 , 300 ) )
 #   b) set tickers, called 'breaks'
-f1 + scale_x_continuous( limits = c( 0 , 750 ) , breaks = c( 0 , 100 , 150 , 200 , 250 , 400 , 500 , 600 )  )
+f1 + scale_x_continuous( limits = c( 0 , 300 ) , breaks = c( 0 , 100 , 150 , 200 , 250 , 300 )  )
 
 ##
 # Task: - use only one graph!
@@ -75,19 +80,24 @@ f1 + scale_x_continuous( limits = c( 0 , 750 ) , breaks = c( 0 , 100 , 150 , 200
 #  3) set the limits for Y between 0 and 100
 #  4) Set the breaks with binwidth of 10 for Y
 
-
+f1 + scale_x_continuous( limits = c( 0 , 500 ) ,
+                         breaks = seq( from = 0 , to = 500 , by = 50 ) ) +
+     scale_y_continuous( limits = c( 0 , 100 ),
+                         breaks = ( 0 : 10 ) * 10 )
 
 # Adding lines, texts, ect. to your graph:
 # Add mean and median as lines and annotate them!
 #
 # 1) add a line as the mean
-yval = 60
+yval <- 60
 f1 <- f1 + geom_segment( aes(x = mean( df$price , na.rm = T ), y = 0, 
-                    xend = mean( df$price , na.rm = T ), yend = yval) , color = 'red', size = 1 )
+                    xend = mean( df$price , na.rm = T ), yend = yval) ,
+                    color = 'red', size = 1 )
 f1
 # 2) add annotation which says it is the mean
 f1 <- f1 + 
-  annotate( "text" , x = mean( df$price , na.rm = T ) + 20 , y = yval - 5 , label = 'Mean' , color = 'red')
+  annotate( "text" , x = mean( df$price , na.rm = T ) + 20 ,
+            y = yval - 5 , label = 'Mean' , color = 'red')
 f1
 
 # 3) Calculate the median as a 50th percentile 
@@ -96,9 +106,11 @@ f1
 median_price <- quantile( df$price , .50)
 # Add both of them to the figure
 f1 + 
-  annotate( "text" , x = median_price + 10 , y = yval + 5 , label = 'Median' , color = 'blue') +
+  annotate( "text" , x = median_price + 10 , y = yval + 5 ,
+            label = 'Median' , color = 'blue') +
   geom_segment( aes(x = median_price, y = 0, 
-                    xend = median_price, yend = yval) , color = 'blue', size = 1 )
+                    xend = median_price, yend = yval) ,
+                color = 'blue', size = 1 )
 
 
 ##

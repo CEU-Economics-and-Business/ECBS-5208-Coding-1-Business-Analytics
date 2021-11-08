@@ -10,8 +10,8 @@ rm(list=ls())
 # packages
 library(tidyverse)
 library(modelsummary)
+install.packages("fixest")
 library(fixest)
-
 library(grid)
 
 
@@ -28,7 +28,8 @@ hotels <- hotels %>% filter(accommodation_type=="Hotel") %>%
 
 # Summary statistics on price
 P95 <- function(x){ quantile(x,.95,na.rm=T)}
-datasummary( price + distance ~ Mean + SD + Min + Max + Median + P95 + N , data = hotels )
+datasummary( price + distance ~ Mean + SD + Min + 
+               Max + Median + P95 + N , data = hotels )
 
 ##
 # Graphical investigation
@@ -48,10 +49,12 @@ p1
 #   Close vs Far away hotels with a binary variable
 hotels <- hotels %>% mutate( dist2 = as.numeric( distance >= 2 ) )
 # Add the mean of the prices for both categories
-dist2 <- hotels %>% group_by(dist2) %>% dplyr:: summarize(Eprice_cat2=mean(price))
+dist2 <- hotels %>% group_by(dist2) %>% 
+            dplyr:: summarize(Eprice_cat2=mean(price))
 hotels<-left_join(hotels,dist2)
 # Recode it to a factor
-hotels <- hotels %>%  mutate(dist2 = recode(dist2,`0` = "Close",`1` = "Far"))
+hotels <- hotels %>%  mutate(dist2 = 
+                               recode(dist2,`0` = "Close",`1` = "Far"))
 
 datasummary( dist2* distance + dist2*price ~ 
                Mean + SD + Min + Max + N , data = hotels )
@@ -114,7 +117,6 @@ p1 + geom_segment( data=hotels, aes(x = dist4_s, y=yend, xend=xend, yend=yend),
 #####
 # Task: 
 #   REGRESSION 3: use 7 different categories/bins based on distance
-
 
 # Creating the new intervals
 hotels <- hotels %>% mutate( dist7_new = 0.5 + 
@@ -182,6 +184,9 @@ reg
 # In the Book's github page you will see `estimatr` library with `lm_robust` command:
 #   it is the same as felos with robust SE.
 
+# How to estimate heteroskedastic robust SE:
+reg_h <- feols( price ~ distance , data = hotels , vcov = 'hetero' )
+reg_h
 
 # predicted values and residuals
 hotels$predprice <- reg$fitted.values
@@ -293,11 +298,26 @@ f1 <- ggplot(data = hotels, aes(x = distance, y = price)) +
   theme_bw() 
 f1
 
-# LOG-LEVEL LINEAR REGRESSION 
+# LEVEL-LOG LINEAR REGRESSION 
 reg2 <- feols(price ~ lndistance, data=hotels)
 reg2
 
-f2 <- ggplot(data = hotels, aes(x = distance, y = lnprice)) +
+f2 <- ggplot(data = hotels, aes(x = lndistance, y = price)) +
+  geom_point(color='red',size=1.5) + 
+  geom_smooth(method = "lm", formula = y~ x)+
+  expand_limits(x = 0.01, y = 0.01) +
+  scale_y_continuous(expand = c(0.01,0.01), limits = c(0, 400), breaks = seq(0, 400, by = 50)) +
+  labs(x = "ln(distance to city center, miles)",y = "Price (US dollars)")+
+  theme_bw() 
+f2
+
+
+
+# LOG-LEVEL LINEAR REGRESSION
+reg3 <- feols(lnprice ~ distance, data=hotels)
+reg3
+
+f3 <- ggplot(data = hotels, aes(x = distance, y = lnprice)) +
   geom_point(color='red',size=1.5) + 
   geom_smooth(method = "lm", formula = y~ x)+
   expand_limits(x = 0.01, y = 0.01) +
@@ -305,20 +325,8 @@ f2 <- ggplot(data = hotels, aes(x = distance, y = lnprice)) +
   scale_y_continuous(expand = c(0.01,0.01), limits = c(3.5, 6), breaks = seq(3.5, 6, by = 0.50)) +
   labs(x = "Distance to city center (miles)",y = "ln(price, US dollars)")+
   theme_bw() 
-f2
-
-# LEVEL-LOG LINEAR REGRESSION
-reg3 <- feols(lnprice ~ distance, data=hotels)
-reg3
-
-f3 <- ggplot(data = hotels, aes(x = lndistance, y = price)) +
-  geom_point(color='red',size=1.5) + 
-  geom_smooth(method = "lm", formula = y~ x)+
-  expand_limits(x = 0.01, y = 0.01) +
-  scale_y_continuous(expand = c(0.01,0.01), limits = c(0, 400), breaks = seq(0, 400, by = 50)) +
-  labs(x = "ln(distance to city center, miles)",y = "Price (US dollars)")+
-  theme_bw() 
 f3
+
 
 # LOG-LOG LINEAR REGRESSION 
 reg4 <- feols(lnprice ~ lndistance, data=hotels)

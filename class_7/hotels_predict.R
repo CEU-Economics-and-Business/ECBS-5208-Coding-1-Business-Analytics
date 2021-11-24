@@ -63,9 +63,12 @@ p2
 ##
 # Task: plot p3: rating vs price
 # What can you infer?
-p3 <-
-  
+p3 <- ggplot( data = vienna , aes( x = rating, y = lnprice )) +
+  geom_point( color = 'red', size = 2, shape = 16, ) + 
+  geom_smooth( method = 'loess', formula = y ~ x) +
+  labs(x = "Ratings of the hotel",y = "Log of price (US dollars)")
 p3
+# Rating: check with simple linear and with linear spline around value of 3.5
 
 # Joining these three graphs into one if want to report!
 association_figs <- ggarrange(p1, p2, p3,
@@ -83,15 +86,19 @@ association_figs
 # II) Running regressions:
 
 # Baseline A: use only rating with heteroscedastic SE
-reg0 <- 
+reg0 <- feols( lnprice ~ rating, data = vienna , vcov = 'hetero')
+reg0
+
 # Baseline B: use only distance with heteroscedastic SE
-reg1 <- 
+reg1 <- feols( lnprice ~ distance , data = vienna , vcov = 'hetero' )
+reg1
   
 # Multiple regression with both rating and distance
 reg2 <- feols( lnprice ~ distance + rating , data = vienna , vcov = 'hetero' )
+reg2
 
 # Add the number of stars to out model:
-# As stars are dicrete values: better to use `dummy` variables instead of one 'qusi-continuous' variable
+# As stars are discrete values: better to use `dummy` variables instead of one 'qusi-continuous' variable
 vienna <- vienna %>% mutate( star3 = as.numeric( stars == 3 ),
                              star35 = as.numeric( stars == 3.5 ),
                              star4 = as.numeric( stars == 4 ) )
@@ -99,7 +106,8 @@ vienna <- vienna %>% mutate( star3 = as.numeric( stars == 3 ),
 ###
 # Task: add stars as dummies to the model with heteroscedastic SE
 # 
-reg3 <- 
+reg3 <- feols( lnprice ~ distance + rating + star3 + star35 , data = vienna , vcov = 'hetero' )
+reg3
 
 # Compare the results
 etable( reg0 , reg1 , reg2 , reg3 )
@@ -123,7 +131,7 @@ vienna$lnprice_resid <- reg4$residuals
 vienna$price_hat <- exp( vienna$lnprice_hat )
 
 # List of 5 best deals
-vienna %>%  top_n( 5 , lnprice_resid) %>% select( hotel_id , price , price_hat, lnprice , lnprice_hat ,
+vienna %>%  top_n( -5 , lnprice_resid) %>% select( hotel_id , price , price_hat, lnprice , lnprice_hat ,
                                                   lnprice_resid , distance , stars , rating )
 ##
 # Two useful graphs:
@@ -237,15 +245,15 @@ vienna_m_time <- data %>% filter(accommodation_type=="Hotel") %>%
 
 # first we get our preferred dates
 vienna_m_time <- vienna_m_time %>% 
-        filter( ( year == 2017 & month == 11 & weekend == 1 ) |
-                ( year == 2017 & month == 11 & weekend == 0 ) |
-                ( year == 2017 & month == 12 & holiday == 1 ) |
-                ( year == 2018 & month ==  6 & weekend == 1 ) )
+  filter( ( year == 2017 & month == 11 & weekend == 1 ) |
+            ( year == 2017 & month == 11 & weekend == 0 ) |
+            ( year == 2017 & month == 12 & holiday == 1 ) |
+            ( year == 2018 & month ==  6 & weekend == 1 ) )
 
 # Secondly we extract the frequencie for each hotels
 freq_hotel_id <- vienna_m_time %>% select( hotel_id ) %>% 
-                  group_by( hotel_id ) %>% 
-                  summarise( num_hotel = n() )
+  group_by( hotel_id ) %>% 
+  summarise( num_hotel = n() )
 # Hotels with frequency of four are in all of our dates
 four_freq_id <- freq_hotel_id$hotel_id[ freq_hotel_id$num_hotel == 4 ]
 
@@ -274,43 +282,49 @@ etable( regt_0 , regt_1 , regt_2 , regt_3 )
 
 
 # 2) Second let check for different accomodation types in Vienna:
-#  Task: Compare hotels with Apartments:
-# Notes: 
-#   - we only change one thing at a time thus everything should be the same as for filtering for Vienna
-#   - Also think about the observations! Is it possible in this case to compare the same observations 
-#     as with the time exercise? 
-#   - finally filter out missing values from rating variable to avoide warnings
+#  Compare hotels with Apartments:
+# Note: we only change one thing at a time!
 
-vienna_h_vs_a <- 
+vienna_h_vs_a <- data %>% filter( accommodation_type=="Hotel" | accommodation_type == "Apartment") %>%
+  filter(city_actual=="Vienna") %>%
+  filter( year == 2017 & month == 11 & weekend == 1  ) %>% 
+  filter( nnights == 1 ) %>% 
+  filter(stars>=3 & stars<=4) %>% filter(!is.na(stars)) %>%
+  filter(price<=600) %>% 
+  filter(!is.na(rating))
 
 # Note: here we can not compare the same observations as they are inherently different!
 
 # Run regression for the hotels
-regh <- 
+regh <- feols(  m_form , vcov = 'hetero', data = filter( vienna_h_vs_a ,  accommodation_type=="Hotel" ) )
 
 # Run regression for the apartments
-rega <- 
+rega <- feols(  m_form , vcov = 'hetero', data = filter( vienna_h_vs_a ,  accommodation_type == "Apartment" ) )
 
 # Compare the results:
 etable( regh , rega )
 
 ##
 # 3) Finally compare different cities:
-#  Task:  Check Vienna, Amsterdam and Barcelona!
-#   Note: 
-#     - Get rid of the price filter
-#     - filter out missing values from rating variable to avoide warnings
+#   Check Vienna, Amsterdam and Barcelona!
+# Get rid of the price filter
 
-hotels_cities <-
+hotels_cities <- data %>% filter( accommodation_type=="Hotel" ) %>%
+  filter(city_actual=="Vienna" | city_actual == 'Amsterdam'  | city_actual == 'Barcelona' ) %>%
+  filter( year == 2017 & month == 11 & weekend == 1  ) %>% 
+  filter( nnights == 1 ) %>% 
+  filter(stars>=3 & stars<=4) %>% 
+  filter(!is.na(stars)) %>% 
+  filter(!is.na(rating))
 
 # Run regression for Vienna
-reg_v <- 
+reg_v <- feols(  m_form , vcov = 'hetero', data = filter( hotels_cities ,  city_actual=="Vienna" ) )
 
 # Run regression for Amsterdam
-reg_a <- 
+reg_a <- feols(  m_form , vcov = 'hetero', data = filter( hotels_cities ,  city_actual=="Amsterdam" ) )
 
 # Run regression for Barcelona
-reg_b <- 
+reg_b <- feols(  m_form , vcov = 'hetero', data = filter( hotels_cities ,  city_actual=="Barcelona" ) )
 
 # Compare:
 etable( reg_v , reg_a , reg_b )

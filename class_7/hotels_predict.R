@@ -80,7 +80,7 @@ association_figs
 #   - however if the regressor is needed then it is enough to decide for that particular variable only!
 
 ##
-# Running regressions:
+# II) Running regressions:
 
 # Baseline A: use only rating with heteroscedastic SE
 reg0 <- 
@@ -114,7 +114,7 @@ etable( reg2 , reg3 , reg4 )
 
 
 ####
-# Analyzing the results: our choice is regression 4
+# III) Analyzing the results: our choice is regression 4
 
 # Save the predicted and residual values
 vienna$lnprice_hat <- reg4$fitted.values
@@ -206,7 +206,7 @@ our_hotel_price
 
 
 #####
-# External validity of the model
+# IV) External validity of the model
 #
 # We want to test how our favorite model would perform if we change:
 #   time OR place OR type of observations (e.g. Apartment instead of Hotels)

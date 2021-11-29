@@ -128,6 +128,8 @@ df <- df %>% select( score4 , stratio, english,
                      income, scratio, exptot, special,
                      lunch, salary ) %>% drop_na()
 
+# As this is an already cleaned dataset there is no much to do w.r.t. cleaning...
+
 # Check the main parameter of interests and potential confounders:
 
 # score 4
@@ -154,7 +156,6 @@ ggplot( df , aes(x = english)) +
 df <- df %>% mutate( english_d = 1*(english>1))
 
 
-# As this is an already cleaned dataset there is no much to do w.r.t. cleaning...
 # Scaling: already these are in percent or not so large values, thus scaling is not necessary
 
 ####

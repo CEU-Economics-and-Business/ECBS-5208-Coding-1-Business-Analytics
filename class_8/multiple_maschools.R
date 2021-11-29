@@ -180,11 +180,6 @@ ggplot( data = melted_cormat, aes( Var2 , Var1 , fill = value ) )+
   labs(y="",x="")+
   coord_fixed()
 
-# Results:
-#   - only those which are 
-#       a) possible outcomes, 
-#       b) not inteded to include in the main regression
-# Remove the un-needed variables
 rm( cT , numeric_df )
 
 ####

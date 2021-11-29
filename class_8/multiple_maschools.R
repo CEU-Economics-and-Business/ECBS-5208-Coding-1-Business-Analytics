@@ -120,11 +120,11 @@ datasummary_skim( df )
 ####
 # Sample restriction: drop missing values from:
 # Our main variables will be:
-#   score4 , stratio, english, 
+#   score4 , score8, stratio, english, 
 #   income, scratio, exptot, special,
 #   lunch, salary
 
-df <- df %>% select( score4 , stratio, english, 
+df <- df %>% select( score4 , score8, stratio, english, 
                      income, scratio, exptot, special,
                      lunch, salary ) %>% drop_na()
 
@@ -140,7 +140,7 @@ ggplot( df , aes(x = score4)) +
 
 # stratio
 ggplot( df , aes(x = stratio)) +
-  geom_histogram(binwidth = 0.5,fill='navyblue', color = 'white' ) +
+  geom_histogram(binwidth = 1,fill='navyblue', color = 'white' ) +
   labs(y = 'Count',x = "Student to teacher ratio") +
   theme_bw()
 
@@ -180,7 +180,7 @@ ggplot( data = melted_cormat, aes( Var2 , Var1 , fill = value ) )+
   labs(y="",x="")+
   coord_fixed()
 
-rm( cT , numeric_df )
+rm( cT , numeric_df , melted_cormat )
 
 ####
 # 5) Checking scatter-plots to decide the functional form
@@ -254,11 +254,11 @@ chck_sp(df$salary,'Average teacher salary')
 
 
 # reg1: NO control, simple linear regression
-reg1 <- 
+reg1 <- feols( score4 ~ stratio , data = df , vcov = 'hetero')
 reg1
 
 # reg2: NO controls, use piecewise linear spline(P.L.S) with a knot at 18
-reg2 <- 
+reg2 <- feols( score4 ~ lspline( stratio , 18 ) , data = df , vcov = 'hetero')
 reg2
 
 # Compare the two results:
@@ -279,7 +279,7 @@ summary(fit_seg)
 # reg3: control for english learners dummy (english_d) only. 
 #   Is your parameter different? Is it a confounder?
 
-reg3 <- 
+reg3 <- feols( score4 ~ lspline( stratio , 18 ) + english_d , data = df , vcov = 'hetero' )
 reg3
 
 # Extra for reg3
@@ -294,7 +294,8 @@ etable( reg3, reg31 )
 
 ##
 # reg4: reg3 + Schools' special students measures (lunch with P.L.S, knot: 15; and special)
-reg4 <- 
+reg4 <- feols( score4 ~ lspline( stratio , 18 ) + english_d +
+                 lspline( lunch , 15 ) + special , data = df , vcov = 'hetero' )
 reg4
 
 ##
@@ -302,8 +303,11 @@ reg4
 #   reg5: reg4 + salary with P.L.S, knots at 35 and 40, exptot, log of income and scratio
 #
 # Reminder: this is already 12 variables...
-reg5 <-
-reg5
+reg5 <-feols( score4 ~ lspline( stratio , 18 ) + english_d +
+                lspline( lunch , 15 ) + special +
+                lspline( salary , c( 35 , 40 ) ) + exptot +
+                log( income ) + scratio , data = df , vcov = 'hetero' )
+summary( reg5 )
 
 ###
 # Summarize our findings:
@@ -337,6 +341,26 @@ etable( reg1 , reg2 , reg3 , reg4 , reg5 ,
 # And compare reg4, reg5 and reg51
 
 
+###
+# IF HAVE TIME:
+# What if `special' is a `bad control` -> it soaks up the effect on teacher's importance!
+#   Let check the result without 'special' value
+
+reg51 <- feols( score4 ~ lspline( stratio , 18 ) + english_d
+                + lspline(lunch,15)
+                + lspline(salary,c(35,40)) + exptot 
+                + log( income ) + scratio , data = df , vcov = 'hetero' )
+
+etable(  reg4 , reg5 , reg51,
+         title = 'Average test scores for 4th graders',
+         headers = c("(4)","(5)","(5.1)"),
+         dict = varname_report,
+         drop = vars_omit ,
+         group = groupConf ,
+         se.below = T,
+         coefstat = 'confint')
+
+
 ##
 # EXTERNAL VALIDITY:
 #
@@ -346,7 +370,50 @@ etable( reg1 , reg2 , reg3 , reg4 , reg5 ,
 #   3) Run similalry 5 regressions (use the same regressors, but maybe with other transformation)
 #   4) Report the results
 
+chck_sp8 <- function(x_var){
+  ggplot( df , aes(x = x_var, y = score8)) +
+    geom_point() +
+    geom_smooth(method="loess" , formula = y ~ x )+
+    labs(y = "Averaged values of test scores for 8th grade") 
+}
 
+chck_sp8(df$stratio)
+# stratio is same, but even smaller value: I would choose 16
+chck_sp8(df$english_d)
+chck_sp8(df$lunch)
+# Lunch is the same
+chck_sp8(df$special)
+# Special seems to be quadratic...
+chck_sp8(df$salary)
+# Salary needs only one knot at 35
+chck_sp8(df$exptot)
+# Use only linear
+chck_sp8(df$income)
+chck_sp8(log(df$income))
+# Perfect for log-transformation with quadratic
+chck_sp8(df$scratio)
+# Linear
+
+reg1_e <- feols( score8 ~ stratio, data = df , vcov = 'hetero' )
+reg2_e <- feols( score8 ~ lspline( stratio , 16 ), data = df , vcov = 'hetero')
+reg3_e <- feols( score8 ~ lspline( stratio , 16 ) + english_d, data = df , vcov = 'hetero')
+reg4_e <- feols( score8 ~ lspline( stratio , 16 ) + english_d
+                 + lspline(lunch,15) + special + special^2 , data = df , vcov = 'hetero')
+reg5_e <- feols( score8 ~ lspline( stratio , 16 ) + english_d
+                 + lspline(lunch,15) + special + special^2
+                 + lspline(salary,35) + exptot 
+                 + log( income ) + log( income )^2 + scratio , data = df , vcov = 'hetero')
+
+
+etable(  reg1_e , reg2_e , reg3_e, reg4_e, reg5_e ,
+         title = 'Average test scores for 8th graders',
+         headers = c("(1e)","(2e)","(3e)","(4e)","(5e)"),
+         dict = varname_report,
+         drop = vars_omit ,
+         group = groupConf ,
+         se.below = T,
+         coefstat = 'confint',
+         fitstat = c('r2','ll'))
 
 #####
 # Extra practice: apply the same methods for California schools

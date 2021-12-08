@@ -122,7 +122,7 @@ rm( agg_mnb, mnb )
 eur <- eur %>% mutate( year = year(time),
                        quarter = quarter(time) )
 
-# Last day for each mount
+# Last day for each quarters
 agg_eur<-eur %>% select( time, year, quarter, EUR) %>% 
   group_by( year, quarter ) %>% 
   filter(time==max(time)) %>% ungroup()
@@ -140,7 +140,7 @@ df <- df[ complete.cases(df) , ]
 ###
 # Visualization of the data:
 
-# NO 1: check the time-series in different graps
+# NO 1: check the time-series in different graphs
 df_aux <- gather(df, key = measure, value = Rate, 
                  c("gdp", "inflat", "unemp","EUR"))
 
@@ -182,7 +182,7 @@ install.packages("aTSA")
 library(aTSA)
 
 # Philips-Perron test for unit-root:
-# Type 1: y_t = rho * y_t-1
+# Type 1: y_t = rho * y_t-1 + eps
 # Type 2: y_t = alpha + rho * y_t-1
 # Type 3: y_t = alpha + delta * t + rho * y_t-1 (Neglect this output!)
 #   Reason to neglect: the power of this test is low (agianst e.g. seasonality)

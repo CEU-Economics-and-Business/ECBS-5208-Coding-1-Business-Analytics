@@ -21,7 +21,7 @@ install.packages("lubridate")
 library(lubridate)
 
 ##
-# 1st source: climate dataset  (cooling degree days etc, by month)
+# 1st source: climate data  (cooling degree days etc, by month)
 climate <- read_csv('https://osf.io/g3tj7/download')
 # and convert them into date format as well: here we have an easier implemented format
 climate <- climate %>% mutate( tempdate = ym( DATE ) )
@@ -48,7 +48,7 @@ datasummary( CLDD_avg + HTDD_avg ~ Mean + Median + SD + Min + Max , data = clima
 
 
 ##
-# 2nd source: the electricity consumption dataset (monthly data)
+# 2nd source: the electricity consumption data (monthly data)
 electricity <- read_csv('https://osf.io/wbef4/download')
 
 # Convert 'MY' variable into numeric format
@@ -195,7 +195,9 @@ ggplot(data = df, aes(x=DHTDD_avg, y=DlnQ)) +
 #
 # reg1: DlnQ = alpha + beta_1 * DCLDD_avg + beta_2 * DHTDD_avg
 # reg2: DlnQ = alpha + beta_1 * DCLDD_avg + beta_2 * DHTDD_avg + months
-
+# reg3: DlnQ = alpha + gamma * lag( DlnQ ) + beta_1 * DCLDD_avg + beta_2 * DHTDD_avg + months
+# reg4: DlnQ = alpha + beta_1 * DCLDD_avg + beta_2 * DHTDD_avg + months + 2 LAGS of DCLDD_avg and DHTDD_avg
+# reg_cumSE: use reg4 but estimate standard errors for the cumulative effect
 
 df <- df %>% mutate( period = 1 : dim( df )[1] , id = 1 )
 
